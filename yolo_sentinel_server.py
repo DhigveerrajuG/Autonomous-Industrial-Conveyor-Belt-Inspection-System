@@ -9,6 +9,7 @@ import time
 import json
 import threading
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 import cv2
 import numpy as np
 
@@ -251,9 +252,11 @@ class ConveyorDetector:
 
         return frame, detections, has_hole, has_foreign, has_crack
 
+global_detector = ConveyorDetector()
+
 def camera_loop():
-    global latest_frame_jpeg, latest_telemetry
-    detector = ConveyorDetector()
+    global latest_frame_jpeg, latest_telemetry, global_detector
+    detector = global_detector
 
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     if not cap.isOpened():
@@ -338,7 +341,10 @@ class SentinelHTTPHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        if self.path == '/' or self.path == '/index.html':
+        parsed = urlparse(self.path)
+        clean_path = parsed.path
+
+        if clean_path in ('/', '/index.html'):
             dash_path = os.path.join(os.path.dirname(__file__), 'conveyor-sentinel-dashboard.html')
             if os.path.exists(dash_path):
                 self.send_response(200)
@@ -349,12 +355,21 @@ class SentinelHTTPHandler(BaseHTTPRequestHandler):
                 return
             else:
                 self.send_response(200)
-                self.send_header('Content-Type', 'text/plain')
+                self.send_header('Content-Type', 'text/plain; charset=utf-8')
                 self.end_headers()
                 self.wfile.write(b"Conveyor Sentinel AI Server Running.")
                 return
 
-        elif self.path == '/telemetry':
+        elif clean_path == '/telemetry':
+            qs = parse_qs(parsed.query)
+            if 'conf' in qs:
+                try:
+                    new_conf = float(qs['conf'][0])
+                    if 0.01 <= new_conf <= 1.0:
+                        global_detector.conf = new_conf
+                except (ValueError, TypeError):
+                    pass
+
             with lock:
                 payload = json.dumps(latest_telemetry).encode('utf-8')
             self.send_response(200)
@@ -364,7 +379,7 @@ class SentinelHTTPHandler(BaseHTTPRequestHandler):
             self.wfile.write(payload)
             return
 
-        elif self.path == '/stream':
+        elif clean_path == '/stream':
             self.send_response(200)
             self.send_header('Content-Type', 'multipart/x-mixed-replace; boundary=frame')
             self.send_header('Cache-Control', 'no-cache, private')
@@ -377,7 +392,7 @@ class SentinelHTTPHandler(BaseHTTPRequestHandler):
                     try:
                         self.wfile.write(b'--frame\r\n')
                         self.wfile.write(b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-                    except (BrokenPipeError, ConnectionResetError):
+                    except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, OSError):
                         break
                 time.sleep(0.04)
             return

@@ -1166,6 +1166,9 @@
 
     <script>
         const $ = id => document.getElementById(id);
+        const API_BASE = (window.location.protocol && window.location.protocol.startsWith('http'))
+            ? window.location.origin
+            : 'http://localhost:8000';
         let chart = null, currentStream = null, activeSource = 'sim';
         let simAnimId = null, overlayAnimId = null, logicTimer = null, cvTimer = null;
         let isRunning = true;
@@ -1228,7 +1231,7 @@
             currentSensitivity = parseInt(e.target.value);
             $('lblDamageSens').textContent = currentSensitivity <= 10 ? `High Recall (${currentSensitivity}% Conf)` : (currentSensitivity <= 35 ? `High Accuracy (${currentSensitivity}% Conf)` : `Ultra Precision (${currentSensitivity}% Conf)`);
             if (activeSource === 'yolo') {
-                fetch(`http://localhost:8000/telemetry?conf=${(currentSensitivity / 100).toFixed(2)}`).catch(() => {});
+                fetch(`${API_BASE}/telemetry?conf=${(currentSensitivity / 100).toFixed(2)}`).catch(() => {});
             }
         };
 
@@ -2279,12 +2282,12 @@
             const img = $('yoloStreamImg');
             const emptyNotice = $('yoloEmpty');
 
-            fetch('http://localhost:8000/telemetry')
+            fetch(`${API_BASE}/telemetry`)
                 .then(r => r.json())
                 .then(data => {
                     emptyNotice.classList.add('hidden');
                     img.style.display = 'block';
-                    img.src = 'http://localhost:8000/stream?t=' + Date.now();
+                    img.src = `${API_BASE}/stream?t=${Date.now()}`;
                     $('cameraToggleBtn').textContent = 'Pause AI';
                     $('cameraToggleBtn').classList.remove('primary');
                     toast('Connected to YOLOv8 AI Model engine!');
@@ -2297,7 +2300,7 @@
 
             yoloPollTimer = setInterval(() => {
                 if (activeSource !== 'yolo' || !isRunning) return;
-                fetch('http://localhost:8000/telemetry')
+                fetch(`${API_BASE}/telemetry`)
                     .then(r => r.json())
                     .then(data => {
                         emptyNotice.classList.add('hidden');
@@ -2305,7 +2308,7 @@
                         if ($('fpsBadge')) $('fpsBadge').textContent = `${data.fps} FPS`;
 
                         if (data.has_damage && data.detections && data.detections.length > 0) {
-                            const holeDet = data.detections.find(d => d.type === 'hole' || (d.class && d.class.toLowerCase().includes('hole')));
+                            const holeDet = data.detections.find(d => d.type === 'hole' || ((d.class || '').toLowerCase().includes('hole')));
                             if (holeDet && holeDet.norm_bbox) {
                                 const confPct = Math.round((holeDet.confidence || 0.9) * 100);
                                 activeFlaws.hole = {
@@ -2318,7 +2321,7 @@
                                 activeFlaws.hole = null;
                             }
 
-                            const foreignDet = data.detections.find(d => d.type === 'foreign_object' || d.class.toLowerCase().includes('foreign'));
+                            const foreignDet = data.detections.find(d => d.type === 'foreign_object' || ((d.class || '').toLowerCase().includes('foreign')));
                             if (foreignDet) {
                                 const confPct = Math.round((foreignDet.confidence || 0.88) * 100);
                                 activeFlaws.foreign = {
@@ -2331,7 +2334,7 @@
                                 activeFlaws.foreign = null;
                             }
 
-                            const crackDet = data.detections.find(d => d.type === 'crack' || d.class.toLowerCase().includes('crack') || d.class.toLowerCase().includes('tear'));
+                            const crackDet = data.detections.find(d => d.type === 'crack' || ((d.class || '').toLowerCase().includes('crack')) || ((d.class || '').toLowerCase().includes('tear')));
                             if (crackDet) {
                                 const confPct = Math.round((crackDet.confidence || 0.85) * 100);
                                 activeFlaws.crack = {
@@ -2350,6 +2353,7 @@
                         updateLogic();
                     })
                     .catch(() => {
+                        // Suppress unhandled rejection if server temporarily drops
                     });
             }, 180);
         }

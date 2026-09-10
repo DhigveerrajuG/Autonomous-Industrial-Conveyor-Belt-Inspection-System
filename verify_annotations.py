@@ -1,7 +1,8 @@
 import os
 import cv2
 
-folder = "user_images/holes"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+folder = os.path.join(BASE_DIR, "user_images", "holes")
 if os.path.exists(folder):
     for f in os.listdir(folder):
         if f.endswith(".txt"):
@@ -15,15 +16,17 @@ if os.path.exists(folder):
                 continue
             h, w = img.shape[:2]
             
-            with open(os.path.join(folder, f)) as tf:
+            with open(os.path.join(folder, f), "r", encoding="utf-8") as tf:
                 for line in tf:
-                    _, cx, cy, bw, bh = map(float, line.strip().split())
-                    x1 = int((cx - bw / 2) * w)
-                    y1 = int((cy - bh / 2) * h)
-                    x2 = int((cx + bw / 2) * w)
-                    y2 = int((cy + bh / 2) * h)
-                    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)
-                    cv2.putText(img, "HOLE / DAMAGE", (x1, max(20, y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                    parts = line.strip().split()
+                    if len(parts) >= 5:
+                        _, cx, cy, bw, bh = map(float, parts[:5])
+                        x1 = int((cx - bw / 2) * w)
+                        y1 = int((cy - bh / 2) * h)
+                        x2 = int((cx + bw / 2) * w)
+                        y2 = int((cy + bh / 2) * h)
+                        cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 3)
+                        cv2.putText(img, "HOLE / DAMAGE", (x1, max(20, y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
             
             out_path = os.path.join(folder, "annotated_" + os.path.basename(img_path))
             cv2.imwrite(out_path, img)

@@ -16,7 +16,8 @@ annotations = {
     ]
 }
 
-folder = "user_images/holes"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+folder = os.path.join(BASE_DIR, "user_images", "holes")
 for filename, boxes in annotations.items():
     img_path = os.path.join(folder, filename)
     if os.path.exists(img_path):
