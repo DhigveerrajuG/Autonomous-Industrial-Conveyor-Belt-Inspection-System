@@ -1,0 +1,2463 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Conveyor Sentinel | Autonomous Full-Surface Belt Health & Tension Monitoring</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #f4f6f9;
+            --card: #ffffff;
+            --card-alt: #f8fafc;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+
+            --green: #10b981;
+            --green-soft: #ecfdf5;
+            --green-border: #a7f3d0;
+
+            --amber: #f59e0b;
+            --amber-soft: #fffbeb;
+            --amber-border: #fde68a;
+
+            --red: #ef4444;
+            --red-soft: #fef2f2;
+            --red-border: #fecaca;
+
+            --blue: #3b82f6;
+            --blue-soft: #eff6ff;
+
+            --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+            --sans: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+            --mono: 'DM Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 14.5px;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        button,
+        select,
+        input {
+            font: inherit;
+            color: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+        }
+
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card);
+            padding: 16px 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-icon {
+            width: 46px;
+            height: 46px;
+            background: linear-gradient(135deg, #0f172a, #334155);
+            color: #38bdf8;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+        }
+
+        .brand-text h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-text p {
+            font-size: 12.5px;
+            color: var(--muted);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 18px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 13px;
+            background: var(--green-soft);
+            color: #065f46;
+            border: 1px solid var(--green-border);
+            transition: all 0.3s ease;
+        }
+
+        .status-badge.warn {
+            background: var(--amber-soft);
+            color: #92400e;
+            border-color: var(--amber-border);
+        }
+
+        .status-badge.danger {
+            background: var(--red-soft);
+            color: #991b1b;
+            border-color: var(--red-border);
+            animation: pulseAlert 1.5s infinite;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        @keyframes pulseAlert {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.03);
+            }
+        }
+
+        .feed-toggle {
+            display: inline-flex;
+            background: var(--card-alt);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .feed-tab {
+            border: 0;
+            background: transparent;
+            padding: 8px 16px;
+            border-radius: 9px;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--muted);
+            transition: all 0.2s;
+        }
+
+        .feed-tab.active {
+            background: var(--card);
+            color: var(--text);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .audio-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--card-alt);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            transition: all 0.2s;
+        }
+
+        .audio-btn.active {
+            background: var(--card);
+            color: var(--text);
+            border-color: var(--text);
+        }
+
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.42fr) minmax(400px, 1.08fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        
+        .camera-area {
+            position: relative;
+            width: 100%;
+            min-height: 420px;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .camera-area video,
+        .camera-area canvas.feed-canvas {
+            width: 100%;
+            height: 100%;
+            min-height: 420px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .ai-hud-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .camera-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .camera-select {
+            background: var(--card-alt);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            max-width: 200px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 9px;
+            font-weight: 700;
+            font-size: 12.5px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--card-alt);
+            transform: translateY(-1px);
+        }
+
+        .btn.primary {
+            background: var(--text);
+            color: #fff;
+            border-color: var(--text);
+        }
+
+        .camera-empty {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.92);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+            z-index: 3;
+        }
+
+        .camera-empty.hidden {
+            display: none;
+        }
+
+        .camera-empty h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .camera-empty p {
+            font-size: 13px;
+            color: #94a3b8;
+            max-width: 380px;
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+
+        
+        .patrol-bar {
+            background: var(--card-alt);
+            border-top: 1px solid var(--border);
+            padding: 14px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .patrol-status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 12.5px;
+        }
+
+        .patrol-meter {
+            font-family: var(--mono);
+            font-weight: 700;
+            color: var(--text);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .patrol-track-wrap {
+            position: relative;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .patrol-track-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+            border-radius: 99px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .jump-buttons-row {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .jump-label {
+            font-weight: 700;
+            color: var(--muted);
+            margin-right: 2px;
+        }
+
+        .btn-pill {
+            font-size: 11.5px;
+            padding: 4px 10px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            font-weight: 700;
+            transition: all 0.15s ease;
+        }
+
+        .btn-pill:hover {
+            background: var(--card-alt);
+            border-color: #94a3b8;
+        }
+
+        .btn-pill.active {
+            background: var(--text);
+            color: #fff;
+            border-color: var(--text);
+        }
+
+        
+        .scale-findings-bar {
+            background: var(--card-alt);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 16px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            align-items: center;
+        }
+
+        .scale-finding-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .scale-finding-group label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .control-slider {
+            width: 100%;
+            accent-color: #3b82f6;
+            height: 6px;
+            background: var(--border);
+            border-radius: 99px;
+            cursor: pointer;
+        }
+
+        .preset-pills {
+            display: flex;
+            gap: 4px;
+            margin-top: 2px;
+        }
+
+        .btn-pill-sm {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-pill-sm.active, .btn-pill-sm:hover {
+            background: var(--text);
+            color: #fff;
+            border-color: var(--text);
+        }
+
+        .range-hint {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9.5px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .camera-area {
+            overflow: hidden;
+        }
+
+        .feed-canvas, video, .ai-hud-canvas {
+            transition: transform 0.15s ease-out;
+            transform-origin: center center;
+        }
+
+        
+        .findings-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .findings-table th {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 2px solid var(--border);
+            font-weight: 800;
+            color: var(--muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .findings-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            font-family: var(--mono);
+            font-size: 11.5px;
+        }
+
+        .findings-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        
+        .health-panel {
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            height: 100%;
+        }
+
+        .health-score-box {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            background: var(--card-alt);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px 18px;
+        }
+
+        .health-circle {
+            width: 74px;
+            height: 74px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: conic-gradient(var(--green) var(--health-percent, 96%), #e2e8f0 0);
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.4s ease;
+        }
+
+        .health-circle::before {
+            content: '';
+            width: 56px;
+            height: 56px;
+            background: var(--card-alt);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .health-circle span {
+            position: relative;
+            font-size: 20px;
+            font-weight: 800;
+            font-family: var(--mono);
+        }
+
+        .health-text h2 {
+            font-size: 15.5px;
+            font-weight: 800;
+            margin-bottom: 2px;
+        }
+
+        .health-text p {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.35;
+        }
+
+        
+        .verdict-box {
+            background: var(--green-soft);
+            border: 1px solid var(--green-border);
+            color: #065f46;
+            border-radius: 12px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .verdict-box.warn {
+            background: var(--amber-soft);
+            border-color: var(--amber-border);
+            color: #92400e;
+        }
+
+        .verdict-box.danger {
+            background: var(--red-soft);
+            border-color: var(--red-border);
+            color: #991b1b;
+            animation: pulseAlert 1.5s infinite;
+        }
+
+        .verdict-title {
+            font-size: 13px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 3px;
+        }
+
+        .verdict-desc {
+            font-size: 12px;
+            opacity: 0.95;
+            line-height: 1.4;
+        }
+
+        .verdict-location {
+            margin-top: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-family: var(--mono);
+            font-weight: 700;
+            background: rgba(0, 0, 0, 0.06);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        
+        .checklist-card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--card-alt);
+            padding: 12px 14px;
+        }
+
+        .checklist-title {
+            font-size: 11.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .checklist-grid {
+            display: grid;
+            gap: 7px;
+        }
+
+        .check-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 7px 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .check-row.failed {
+            background: var(--red-soft);
+            border-color: var(--red-border);
+        }
+
+        .check-row.warning {
+            background: var(--amber-soft);
+            border-color: var(--amber-border);
+        }
+
+        .check-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+        }
+
+        .check-val {
+            font-family: var(--mono);
+            font-size: 11.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .check-badge {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: var(--green-soft);
+            color: #065f46;
+            border: 1px solid var(--green-border);
+        }
+
+        .check-badge.fail {
+            background: var(--red-soft);
+            color: #991b1b;
+            border-color: var(--red-border);
+        }
+
+        .check-badge.warn {
+            background: var(--amber-soft);
+            color: #92400e;
+            border-color: var(--amber-border);
+        }
+
+        
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.9fr);
+            gap: 24px;
+        }
+
+        .chart-container {
+            height: 180px;
+            padding: 16px 20px;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .alerts-list {
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .alert-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            background: var(--card-alt);
+        }
+
+        .alert-card.critical {
+            background: var(--red-soft);
+            border-color: var(--red-border);
+        }
+
+        .alert-card.warning {
+            background: var(--amber-soft);
+            border-color: var(--amber-border);
+        }
+
+        .alert-icon-box {
+            font-size: 18px;
+            line-height: 1;
+            margin-top: 2px;
+        }
+
+        .alert-info h4 {
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 2px;
+        }
+
+        .alert-info p {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .alert-card.critical .alert-info p {
+            color: #991b1b;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--text);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 13px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.25s ease;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 980px) {
+
+            .main-grid,
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        
+        <header class="header">
+            <div class="brand">
+                <div class="logo-icon">⚡</div>
+                <div class="brand-text">
+                    <h1>Conveyor Sentinel</h1>
+                    <p>Autonomous Full-Surface Belt Health &amp; Tension Monitoring (Tension · Thickness · Cracks ·
+                        Breaks ·
+                        Holes)</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="feed-toggle">
+                    <button type="button" class="feed-tab active" id="tabSim">🔄 Conveyor Stream</button>
+                    <button type="button" class="feed-tab" id="tabWebcam">📹 My Webcam</button>
+                    <button type="button" class="feed-tab" id="tabYolo">🧠 Live YOLO AI Model</button>
+                </div>
+
+                <button type="button" class="audio-btn active" id="audioBtn" title="Toggle Alarm Sound">
+                    <span id="audioIcon">🔊</span>
+                    <span id="audioLabel">Sound: ON</span>
+                </button>
+
+                <div class="status-badge" id="overallBadge">
+                    <span class="status-dot"></span>
+                    <span id="overallText">CONVEYOR NORMAL · ALL 5 CHECKS PASS</span>
+                </div>
+            </div>
+        </header>
+
+        
+        <main class="main-grid">
+            
+            <article class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>📹 Full-Surface Optical &amp; Tension Scanner (Continuous 24/7)</span>
+                        <span style="font-size:11px;font-family:var(--mono);color:var(--muted);" id="fpsBadge">60
+                            FPS</span>
+                    </div>
+
+                    <div class="camera-bar">
+                        <select class="camera-select" id="cameraSelect" style="display:none;" title="Select USB Webcam">
+                            <option value="">Detecting cameras...</option>
+                        </select>
+                        <button type="button" class="btn" id="cameraToggleBtn">Pause Belt</button>
+                        <button type="button" class="btn primary" id="snapshotBtn">📸 Save Photo</button>
+                    </div>
+                </div>
+
+                
+                <div class="scale-findings-bar" id="scaleFindingsBar">
+                    <div class="scale-finding-group">
+                        <label for="imgScaleSlider">🔍 Image Scale (Zoom Range): <strong id="lblImgScale">100% (1.0x)</strong></label>
+                        <input type="range" id="imgScaleSlider" min="50" max="300" step="5" value="100" class="control-slider" title="Drag to adjust viewport image scaling range" />
+                        <div class="preset-pills">
+                            <button type="button" class="btn-pill-sm" id="btnZoom05">0.5x Wide</button>
+                            <button type="button" class="btn-pill-sm active" id="btnZoom10">1.0x Fit</button>
+                            <button type="button" class="btn-pill-sm" id="btnZoom15">1.5x Med</button>
+                            <button type="button" class="btn-pill-sm" id="btnZoom20">2.0x Zoom</button>
+                            <button type="button" class="btn-pill-sm" id="btnZoom30">3.0x Micro</button>
+                        </div>
+                    </div>
+                    <div class="scale-finding-group">
+                        <label for="damageSensSlider">🎯 AI Finding Sensitivity: <strong id="lblDamageSens">High Accuracy (25% Conf)</strong></label>
+                        <input type="range" id="damageSensSlider" min="5" max="80" step="1" value="25" class="control-slider" title="Adjust detection sensitivity threshold" />
+                        <div class="range-hint"><span>High Precision (80%)</span><span>High Recall (5%)</span></div>
+                    </div>
+                    <div class="scale-finding-group">
+                        <label for="defectSizeFilter">📏 Damage Finding Range: <strong id="lblSizeFilter">5mm - 500mm (50cm)</strong></label>
+                        <input type="range" id="defectSizeFilter" min="5" max="500" step="5" value="5" class="control-slider" title="Set minimum defect size threshold" />
+                        <div class="range-hint"><span>5mm (Pinholes)</span><span>500mm (50cm Max)</span></div>
+                    </div>
+                </div>
+
+                <div class="camera-area" id="cameraArea">
+                    <video id="webcamVideo" autoplay playsinline muted style="display:none;"></video>
+                    <img id="yoloStreamImg" class="feed-canvas" style="display:none; width:100%; height:100%; object-fit:contain; background:#0b0f19;" alt="YOLO Live Stream" crossorigin="anonymous" />
+                    <canvas id="simCanvas" class="feed-canvas"></canvas>
+                    <canvas id="aiCanvas" class="ai-hud-canvas"></canvas>
+
+                    <div class="camera-empty hidden" id="cameraEmpty">
+                        <h3>Webcam Off</h3>
+                        <p id="cameraEmptyDesc">Click "Start Feed" or grant camera permission in your browser to test
+                            with your
+                            physical webcam.</p>
+                        <button type="button" class="btn primary" id="startCamBtn">Start Webcam Feed</button>
+                    </div>
+
+                    <div class="camera-empty hidden" id="yoloEmpty">
+                        <h3>⚡ YOLO AI Engine Disconnected</h3>
+                        <p id="yoloEmptyDesc">Launch <code>run_live_sentinel_ai.bat</code> to connect your webcam with the trained YOLO defect model at <code>http://localhost:8000</code>.</p>
+                        <button type="button" class="btn primary" id="retryYoloBtn">🔄 Connect to YOLO AI Server</button>
+                    </div>
+                </div>
+
+                
+                <div class="patrol-bar" id="patrolBar">
+                    <div class="patrol-status-row">
+                        <div class="patrol-meter">
+                            <span>📍 Belt Position:</span>
+                            <strong id="lblBeltMeters" style="color:var(--text);">100.0 m / 2,400.0 m</strong>
+                            <span id="lblBeltSection"
+                                style="font-weight:600;color:var(--green);font-size:11.5px;margin-left:8px;">[🟢
+                                Normal Running Belt]</span>
+                        </div>
+                        <div style="font-size:11.5px;color:var(--muted);">
+                            Belt Speed: <strong style="color:var(--text);">4.0 m/s</strong> (NMDC Primary Overland)
+                        </div>
+                    </div>
+
+                    <div class="patrol-track-wrap" title="Conveyor Belt Loop (2.4 km)">
+                        <div class="patrol-track-fill" id="trackFill"></div>
+                    </div>
+
+                    <div class="jump-buttons-row">
+                        <span class="jump-label">Jump to Scenario:</span>
+                        <button type="button" class="btn-pill active" id="btnJumpNormal">🟢 Normal Belt (Clean)</button>
+                        <button type="button" class="btn-pill" id="btnJumpHole">🕳️ Massive Hole (Ø50cm / 500mm)</button>
+                        <button type="button" class="btn-pill" id="btnJumpCrack">⚡ Right Crack (14mm)</button>
+                        <button type="button" class="btn-pill" id="btnJumpThick">📏 Low Thickness (8.2mm)</button>
+                        <button type="button" class="btn-pill" id="btnJumpBreak">💥 Splice Break (7.4mm)</button>
+                        <button type="button" class="btn-pill" id="btnJumpOverTension">⚖️ Over-Tension (314 kN)</button>
+                        <button type="button" class="btn-pill" id="btnJumpLowTension">🪢 Slack Tension (165 kN)</button>
+                        <button type="button" class="btn-pill" id="btnJumpMulti">⚠️ Multi-Defect Surge</button>
+                    </div>
+                </div>
+            </article>
+
+            
+            <article class="card">
+                <div class="card-header">
+                    <div class="card-title">🩺 Real-Time 5-Point Health Diagnostics</div>
+                    <span style="font-size:12px;font-weight:700;color:var(--muted);" id="lblZone">Inspection Station:
+                        Scanner
+                        #1</span>
+                </div>
+
+                <div class="health-panel">
+                    
+                    <div class="health-score-box">
+                        <div class="health-circle" id="healthCircle" style="--health-percent: 96%;">
+                            <span id="healthPercent">96%</span>
+                        </div>
+                        <div class="health-text">
+                            <h2 id="healthTitle">Belt is in Good Condition</h2>
+                            <p id="healthDesc">Conveyor belt running normally. Tension, thickness, and cord matrix
+                                within standard
+                                operating limits.</p>
+                        </div>
+                    </div>
+
+                    
+                    <div class="verdict-box" id="verdictBox">
+                        <div class="verdict-title" id="verdictTitle">
+                            <span id="verdictIcon">✅</span>
+                            <span id="verdictHeading">FINAL AI OUTPUT: BELT HEALTHY &amp; FIT FOR RUNNING</span>
+                        </div>
+                        <div class="verdict-desc" id="verdictDesc">
+                            Operating tension (245.2 kN) in safe 200-280 kN envelope. Thickness (16.5 mm) above 12.0 mm
+                            limit. Zero
+                            cracks, breaks, or holes detected across full belt width.
+                        </div>
+                        <div class="verdict-location" id="verdictLocation" style="display:none;">
+                            <span>📍 Location:</span>
+                            <span id="verdictLocText">Left Edge (Offset: 120mm)</span>
+                        </div>
+                    </div>
+
+                    
+                    <div class="checklist-card">
+                        <div class="checklist-title">
+                            <span>Full-Surface 5-Point Health Suite</span>
+                            <span style="font-family:var(--mono);">Simultaneous AI Checks</span>
+                        </div>
+                        <div class="checklist-grid">
+                            
+                            <div class="check-row" id="rowTension">
+                                <div class="check-name">
+                                    <span>⚖️</span>
+                                    <span>Belt Operating Tension</span>
+                                </div>
+                                <div class="check-val">
+                                    <span id="valTension">245.2 kN</span>
+                                    <span class="check-badge" id="badgeTension">PASS (200-280 kN)</span>
+                                </div>
+                            </div>
+
+                            
+                            <div class="check-row" id="rowThickness">
+                                <div class="check-name">
+                                    <span>📏</span>
+                                    <span>Belt Thickness</span>
+                                </div>
+                                <div class="check-val">
+                                    <span id="valThickness">16.5 mm</span>
+                                    <span class="check-badge" id="badgeThickness">PASS (≥12mm)</span>
+                                </div>
+                            </div>
+
+                            
+                            <div class="check-row" id="rowCracks">
+                                <div class="check-name">
+                                    <span>⚡</span>
+                                    <span>Surface Cracks</span>
+                                </div>
+                                <div class="check-val">
+                                    <span id="valCracks">0 Cracks</span>
+                                    <span class="check-badge" id="badgeCracks">PASS (Clean)</span>
+                                </div>
+                            </div>
+
+                            
+                            <div class="check-row" id="rowBreaks">
+                                <div class="check-name">
+                                    <span>💥</span>
+                                    <span>Splice &amp; Cord Breaks</span>
+                                </div>
+                                <div class="check-val">
+                                    <span id="valBreaks">100% Intact</span>
+                                    <span class="check-badge" id="badgeBreaks">PASS (Aligned)</span>
+                                </div>
+                            </div>
+
+                            
+                            <div class="check-row" id="rowHoles">
+                                <div class="check-name">
+                                    <span>🕳️</span>
+                                    <span>Punctures &amp; Holes</span>
+                                </div>
+                                <div class="check-val">
+                                    <span id="valHoles">0 Holes</span>
+                                    <span class="check-badge" id="badgeHoles">PASS (Zero Holes)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div
+                        style="display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid var(--border);padding-top:8px;font-size:11.5px;color:var(--muted);">
+                        <div>Tension Balance: <strong style="color:var(--text);" id="lblTenBalance">50% L / 50%
+                                R</strong></div>
+                        <div>Take-up Trolley: <strong style="color:var(--text);" id="lblTakeUp">2.4 m Travel</strong>
+                        </div>
+                        <div>Vibration: <strong style="color:var(--text);" id="lblVib">3.1 mm/s</strong> (Normal)</div>
+                        <div>Roller Temp: <strong style="color:var(--text);" id="lblTemp">52 °C</strong> (Cool)</div>
+                    </div>
+                </div>
+            </article>
+        </main>
+
+        
+        <section class="bottom-grid">
+            <article class="card">
+                <div class="card-header">
+                    <div class="card-title">📈 Belt Health History (Last 30 Seconds)</div>
+                    <span style="font-size:12px;color:var(--muted);font-weight:600;">Higher is better (100% =
+                        Flawless)</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="healthChart"></canvas>
+                </div>
+            </article>
+
+            <article class="card">
+                <div class="card-header">
+                    <div class="card-title">🔔 Real-Time AI Detection Stream</div>
+                    <span id="alertCountBadge"
+                        style="font-size:11px;font-weight:800;background:var(--border);padding:2px 8px;border-radius:99px;">0</span>
+                </div>
+                <div class="alerts-list" id="alertsList">
+                    <div class="alert-card">
+                        <div class="alert-icon-box">✅</div>
+                        <div class="alert-info">
+                            <h4>All 5 Checks Passing</h4>
+                            <p>Conveyor belt running normally. Operating tension (245 kN) and thickness (16.5mm) within
+                                safe envelope.
+                                0 cracks, 0 breaks, 0 holes detected.</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        
+        <article class="card" style="margin-top:24px;">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>📋 Real-Time Damage Findings Breakdown &amp; Spatial Bounding Boxes</span>
+                    <span style="font-size:11px;font-family:var(--mono);color:var(--muted);" id="lblActiveFindingCount">0 Active Flaws</span>
+                </div>
+                <span style="font-size:11px;font-weight:700;color:var(--muted);">Expanded Range Active (5mm - 250mm)</span>
+            </div>
+            <div style="padding:16px 20px; overflow-x:auto;">
+                <table class="findings-table" id="findingsTable">
+                    <thead>
+                        <tr>
+                            <th>Defect ID &amp; Type</th>
+                            <th>Category</th>
+                            <th>Est. Size (mm)</th>
+                            <th>Location Zone</th>
+                            <th>Normalized Bounding Box [x1, y1, x2, y2]</th>
+                            <th>Confidence</th>
+                            <th>Severity Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="findingsTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align:center; color:var(--muted); padding:16px;">
+                                🟢 No active damage findings in current inspection segment. Belt operating cleanly.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+
+    <div class="toast" id="toast">Notification</div>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        let chart = null, currentStream = null, activeSource = 'sim';
+        let simAnimId = null, overlayAnimId = null, logicTimer = null, cvTimer = null;
+        let isRunning = true;
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        const REQUIRED_MIN_THICKNESS = 12.0;
+        const MIN_SAFE_TENSION = 190.0;
+        const MAX_SAFE_TENSION = 290.0;
+
+        const LOOP_LENGTH = 2400.0;
+        let beltMeter = 100.0;
+        let beltSpeed = 4.0;
+
+        let activeFlaws = {
+            hole: null,
+            crack: null,
+            break: null,
+            lowThick: null,
+            tension: null,
+            foreign: null
+        };
+
+        let lastReportedDefectSignature = '';
+        let healthSamples = [];
+
+        let currentImageScale = 1.0;
+        let currentSensitivity = 25;
+        let currentMinSizeFilter = 5;
+
+        function updateImageScale(scaleVal) {
+            currentImageScale = scaleVal;
+            $('lblImgScale').textContent = `${Math.round(scaleVal * 100)}% (${scaleVal.toFixed(1)}x)`;
+            const transformStr = `scale(${scaleVal})`;
+            $('simCanvas').style.transform = transformStr;
+            $('webcamVideo').style.transform = transformStr;
+            $('yoloStreamImg').style.transform = transformStr;
+            $('aiCanvas').style.transform = transformStr;
+        }
+
+        $('imgScaleSlider').oninput = (e) => {
+            const val = parseFloat(e.target.value) / 100;
+            updateImageScale(val);
+            document.querySelectorAll('.btn-pill-sm').forEach(b => b.classList.remove('active'));
+        };
+
+        const zoomMap = { btnZoom05: 0.5, btnZoom10: 1.0, btnZoom15: 1.5, btnZoom20: 2.0, btnZoom30: 3.0 };
+        Object.keys(zoomMap).forEach(btnId => {
+            $(btnId).onclick = () => {
+                document.querySelectorAll('.btn-pill-sm').forEach(b => b.classList.remove('active'));
+                $(btnId).classList.add('active');
+                const scaleVal = zoomMap[btnId];
+                $('imgScaleSlider').value = scaleVal * 100;
+                updateImageScale(scaleVal);
+                toast(`Image scale set to ${scaleVal}x (${scaleVal * 100}%).`);
+            };
+        });
+
+        $('damageSensSlider').oninput = (e) => {
+            currentSensitivity = parseInt(e.target.value);
+            $('lblDamageSens').textContent = currentSensitivity <= 10 ? `High Recall (${currentSensitivity}% Conf)` : (currentSensitivity <= 35 ? `High Accuracy (${currentSensitivity}% Conf)` : `Ultra Precision (${currentSensitivity}% Conf)`);
+            if (activeSource === 'yolo') {
+                fetch(`http://localhost:8000/telemetry?conf=${(currentSensitivity / 100).toFixed(2)}`).catch(() => {});
+            }
+        };
+
+        $('defectSizeFilter').oninput = (e) => {
+            currentMinSizeFilter = parseInt(e.target.value);
+            $('lblSizeFilter').textContent = `${currentMinSizeFilter}mm - 500mm (${Math.round(currentMinSizeFilter/10)}cm - 50cm)`;
+        };
+
+        function toast(msg) {
+            $('toast').textContent = msg;
+            $('toast').classList.add('show');
+            clearTimeout(window.tt);
+            window.tt = setTimeout(() => $('toast').classList.remove('show'), 2400);
+        }
+
+        function playAlarmSound() {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(860, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(380, audioCtx.currentTime + 0.22);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.26);
+            } catch (e) {
+                console.warn('Audio alarm error:', e);
+            }
+        }
+
+        $('audioBtn').onclick = () => {
+            soundEnabled = !soundEnabled;
+            $('audioBtn').classList.toggle('active', soundEnabled);
+            $('audioIcon').textContent = soundEnabled ? '🔊' : '🔇';
+            $('audioLabel').textContent = soundEnabled ? 'Sound: ON' : 'Sound: OFF';
+            toast(soundEnabled ? 'Alarm sound armed.' : 'Alarm sound muted.');
+            if (soundEnabled) playAlarmSound();
+        };
+
+        if (window.Chart) {
+            chart = new Chart($('healthChart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        borderColor: '#10b981',
+                        borderWidth: 3,
+                        fill: true,
+                        backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                        tension: 0.35,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 120 },
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { family: 'DM Mono', size: 10 }, color: '#94a3b8', maxTicksLimit: 6 } },
+                        y: { min: 0, max: 100, border: { display: false }, grid: { color: '#f1f5f9' }, ticks: { font: { family: 'DM Mono', size: 10 }, color: '#94a3b8', stepSize: 25 } }
+                    }
+                }
+            });
+        }
+
+        async function initWebcamList() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                let html = '';
+                videoDevices.forEach((v, i) => {
+                    const label = v.label || `Camera ${i + 1} (${i === 0 ? 'Integrated' : 'USB'})`;
+                    html += `<option value="${v.deviceId}">${label}</option>`;
+                });
+                $('cameraSelect').innerHTML = html || '<option value="">No camera detected</option>';
+            } catch (e) {
+                console.warn('Webcam list error:', e);
+            }
+        }
+
+        async function startWebcam(deviceId) {
+            stopAllFeeds();
+            $('cameraEmpty').classList.add('hidden');
+            $('cameraToggleBtn').textContent = 'Pause Camera';
+            $('cameraToggleBtn').classList.remove('primary');
+
+            const constraints = {
+                video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false
+            };
+
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const video = $('webcamVideo');
+                video.srcObject = currentStream;
+                await video.play();
+                video.style.display = 'block';
+                $('simCanvas').style.display = 'none';
+                $('patrolBar').style.display = 'none';
+                initWebcamList();
+                startAiOverlay();
+                startWebcamAnalysis();
+                toast('Webcam active. Real-time vision scanning full frame.');
+            } catch (err) {
+                console.warn('Camera error:', err);
+                $('cameraEmpty').classList.remove('hidden');
+                $('webcamVideo').style.display = 'none';
+                toast('Could not access webcam. Please allow camera permission.');
+            }
+        }
+
+        const cvCanvas = document.createElement('canvas');
+        cvCanvas.width = 160;
+        cvCanvas.height = 120;
+        const cvCtx = cvCanvas.getContext('2d', { willReadFrequently: true });
+
+        function startWebcamAnalysis() {
+            if (cvTimer) clearInterval(cvTimer);
+            cvTimer = setInterval(() => {
+                if (activeSource !== 'webcam' || !currentStream || !isRunning) return;
+                const video = $('webcamVideo');
+                if (video.readyState < 2) return;
+
+                cvCtx.drawImage(video, 0, 0, 160, 120);
+                const frame = cvCtx.getImageData(0, 0, 160, 120);
+                const d = frame.data;
+
+                let totalLum = 0, sampleCount = 0;
+                for (let y = 15; y < 105; y += 3) {
+                    for (let x = 20; x < 140; x += 3) {
+                        const idx = (y * 160 + x) * 4;
+                        totalLum += (0.299 * d[idx] + 0.587 * d[idx + 1] + 0.114 * d[idx + 2]);
+                        sampleCount++;
+                    }
+                }
+                const avgBeltLum = totalLum / (sampleCount || 1);
+
+                let anomPixels = 0;
+                let minX = 160, maxX = 0, minY = 120, maxY = 0;
+                let lightVoids = 0, darkVoids = 0;
+
+                for (let y = 8; y < 112; y++) {
+                    for (let x = 12; x < 148; x++) {
+                        const idx = (y * 160 + x) * 4;
+                        const lum = 0.299 * d[idx] + 0.587 * d[idx + 1] + 0.114 * d[idx + 2];
+                        const diff = lum - avgBeltLum;
+
+                        if (Math.abs(diff) > 28) {
+                            anomPixels++;
+                            if (diff > 0) lightVoids++; else darkVoids++;
+                            if (x < minX) minX = x;
+                            if (x > maxX) maxX = x;
+                            if (y < minY) minY = y;
+                            if (y > maxY) maxY = y;
+                        }
+                    }
+                }
+
+                const clusterW = maxX - minX;
+                const clusterH = maxY - minY;
+                const flawSizeMm = Math.round((Math.max(clusterW, clusterH) / 160) * 1200);
+                const isAnomaly = flawSizeMm >= currentMinSizeFilter && anomPixels > 25 && clusterW >= 7 && clusterH >= 7 && clusterW < 155 && clusterH < 115;
+
+                if (isAnomaly) {
+                    const normX = ((minX + maxX) / 2) / 160;
+                    const normY = ((minY + maxY) / 2) / 120;
+                    const aspect = clusterW / clusterH;
+                    let loc = 'Center Belt';
+                    if (normX < 0.35) loc = 'Left Edge';
+                    else if (normX > 0.65) loc = 'Right Shoulder';
+                    else if (normY < 0.35) loc = 'Upper Belt';
+                    else if (normY > 0.65) loc = 'Lower Belt';
+
+                    if (aspect >= 0.35 && aspect <= 2.8) {
+                        activeFlaws.hole = {
+                            normX: normX,
+                            normY: normY,
+                            size: flawSizeMm,
+                            location: `${loc} (Webcam Vision)`
+                        };
+                        activeFlaws.crack = null;
+                        activeFlaws.foreign = null;
+                    } else {
+                        activeFlaws.crack = {
+                            normX: normX,
+                            normY: normY,
+                            length: flawSizeMm,
+                            count: 1,
+                            location: loc
+                        };
+                        activeFlaws.hole = null;
+                        activeFlaws.foreign = null;
+                    }
+                } else {
+                    activeFlaws.hole = null;
+                    activeFlaws.crack = null;
+                    activeFlaws.foreign = null;
+                }
+
+                activeFlaws.break = null;
+                activeFlaws.lowThick = null;
+                activeFlaws.tension = null;
+
+                updateLogic();
+            }, 120);
+        }
+
+        let yoloPollTimer = null;
+
+        function stopAllFeeds() {
+            if (cvTimer) { clearInterval(cvTimer); cvTimer = null; }
+            if (yoloPollTimer) { clearInterval(yoloPollTimer); yoloPollTimer = null; }
+            if (currentStream) {
+                currentStream.getTracks().forEach(t => t.stop());
+                currentStream = null;
+            }
+            const v = $('webcamVideo');
+            v.pause();
+            v.srcObject = null;
+            v.style.display = 'none';
+
+            const yImg = $('yoloStreamImg');
+            yImg.src = '';
+            yImg.style.display = 'none';
+            $('yoloEmpty').classList.add('hidden');
+            $('cameraEmpty').classList.add('hidden');
+
+            if (simAnimId) {
+                cancelAnimationFrame(simAnimId);
+                simAnimId = null;
+            }
+            $('simCanvas').style.display = 'none';
+            $('cameraToggleBtn').textContent = 'Start Feed';
+            $('cameraToggleBtn').classList.add('primary');
+        }
+
+        let offset = 0;
+        let oreLumps = [];
+        for (let i = 0; i < 45; i++) {
+            oreLumps.push({
+                x: Math.random() * 1200,
+                y: 40 + Math.random() * 320,
+                r: 6 + Math.random() * 18,
+                color: ['#4b2019', '#632b22', '#78352a', '#3d1a14', '#55281f'][Math.floor(Math.random() * 5)]
+            });
+        }
+
+        function startSimulation() {
+            stopAllFeeds();
+            $('cameraEmpty').classList.add('hidden');
+            $('simCanvas').style.display = 'block';
+            $('patrolBar').style.display = 'flex';
+            $('cameraToggleBtn').textContent = 'Pause Belt';
+            $('cameraToggleBtn').classList.remove('primary');
+
+            const canvas = $('simCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let lastFrameTime = performance.now();
+
+            function drawSim(now) {
+                const dt = Math.min(0.1, (now - lastFrameTime) / 1000);
+                lastFrameTime = now;
+
+                if (isRunning) {
+                    const rect = canvas.getBoundingClientRect();
+                    if (canvas.width !== rect.width || canvas.height !== rect.height) {
+                        canvas.width = rect.width || 800;
+                        canvas.height = rect.height || 420;
+                    }
+                    const w = canvas.width, h = canvas.height;
+
+                    beltMeter = (beltMeter + beltSpeed * dt) % LOOP_LENGTH;
+                    offset += 4.5;
+
+                    ctx.fillStyle = '#1e293b';
+                    ctx.fillRect(0, 0, w, h);
+
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fillRect(0, 0, w, 28);
+                    ctx.fillRect(0, h - 28, w, 28);
+
+                    ctx.fillStyle = '#eab308';
+                    for (let x = -50 + (offset % 50); x < w + 50; x += 50) {
+                        ctx.beginPath();
+                        ctx.moveTo(x, 0); ctx.lineTo(x + 20, 0); ctx.lineTo(x + 5, 28); ctx.lineTo(x - 15, 28);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.moveTo(x, h - 28); ctx.lineTo(x + 20, h - 28); ctx.lineTo(x + 5, h); ctx.lineTo(x - 15, h);
+                        ctx.fill();
+                    }
+
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                    ctx.lineWidth = 1.5;
+                    for (let y = 44; y < h - 40; y += 24) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, y); ctx.lineTo(w, y);
+                        ctx.stroke();
+                    }
+
+                    let hasHole = false, holeY = h * 0.22, holeX = 0;
+                    let hasCrack = false, crackY = h * 0.78, crackX = 0;
+                    let hasBreak = false, breakX = 0;
+                    let hasLowThick = false;
+
+                    if ((beltMeter >= 350 && beltMeter <= 520) || (beltMeter >= 2020 && beltMeter <= 2160)) {
+                        hasHole = true;
+                        holeY = h * 0.22;
+                        const segStart = (beltMeter >= 2020) ? 2020 : 350;
+                        const segLen = (beltMeter >= 2020) ? 140 : 170;
+                        const frac = (beltMeter - segStart) / segLen;
+                        holeX = (1 - frac) * (w + 100) - 50;
+
+                        ctx.fillStyle = '#05070a';
+                        ctx.beginPath();
+                        ctx.arc(holeX, holeY, 22, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.strokeStyle = '#ef4444';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+
+                        activeFlaws.hole = {
+                            x: holeX,
+                            y: holeY,
+                            size: 38,
+                            location: 'Left Edge (Offset: 120mm)'
+                        };
+                    } else {
+                        activeFlaws.hole = null;
+                    }
+
+                    if ((beltMeter >= 850 && beltMeter <= 1020) || (beltMeter >= 2020 && beltMeter <= 2160)) {
+                        hasCrack = true;
+                        crackY = h * 0.76;
+                        const segStart = (beltMeter >= 2020) ? 2020 : 850;
+                        const segLen = (beltMeter >= 2020) ? 140 : 170;
+                        const frac = (beltMeter - segStart) / segLen;
+                        crackX = (1 - frac) * (w + 140) - 70;
+
+                        ctx.strokeStyle = '#f59e0b';
+                        ctx.lineWidth = 3.5;
+                        ctx.beginPath();
+                        ctx.moveTo(crackX, crackY);
+                        ctx.lineTo(crackX + 28, crackY - 6);
+                        ctx.lineTo(crackX + 54, crackY + 4);
+                        ctx.lineTo(crackX + 80, crackY - 3);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.moveTo(crackX - 25, crackY + 16);
+                        ctx.lineTo(crackX + 4, crackY + 12);
+                        ctx.lineTo(crackX + 32, crackY + 18);
+                        ctx.stroke();
+
+                        activeFlaws.crack = {
+                            x: crackX + 25,
+                            y: crackY,
+                            length: 14,
+                            count: 2,
+                            location: 'Right Shoulder (Offset: 840mm)'
+                        };
+                    } else {
+                        activeFlaws.crack = null;
+                    }
+
+                    if (beltMeter >= 1350 && beltMeter <= 1550) {
+                        hasLowThick = true;
+                        ctx.fillStyle = 'rgba(239, 68, 68, 0.16)';
+                        for (let x = 40; x < w; x += 120) {
+                            ctx.fillRect(x - 30, h * 0.36, 60, h * 0.28);
+                        }
+                        activeFlaws.lowThick = {
+                            value: 8.2,
+                            location: 'Center Trough (Wear Zone #2)'
+                        };
+                    } else {
+                        activeFlaws.lowThick = null;
+                    }
+
+                    if (beltMeter >= 1850 && beltMeter <= 2020) {
+                        hasBreak = true;
+                        const frac = (beltMeter - 1850) / 170;
+                        breakX = (1 - frac) * (w + 160) - 80;
+
+                        ctx.save();
+                        ctx.strokeStyle = '#ef4444';
+                        ctx.lineWidth = 8;
+                        ctx.setLineDash([12, 10]);
+                        ctx.beginPath();
+                        ctx.moveTo(breakX, 30);
+                        ctx.lineTo(breakX - 50, h - 30);
+                        ctx.stroke();
+                        ctx.restore();
+
+                        activeFlaws.break = {
+                            x: breakX - 25,
+                            y: h * 0.5,
+                            gap: 7.4,
+                            location: 'Splice Joint #4 (Transversal)'
+                        };
+                    } else {
+                        const normalSpliceX = ((offset * 1.5) % (w + 240)) - 120;
+                        ctx.save();
+                        ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+                        ctx.lineWidth = 3;
+                        ctx.setLineDash([16, 8]);
+                        ctx.beginPath();
+                        ctx.moveTo(normalSpliceX, 30);
+                        ctx.lineTo(normalSpliceX - 40, h - 30);
+                        ctx.stroke();
+                        ctx.restore();
+                        activeFlaws.break = null;
+                    }
+
+                    if (beltMeter >= 2180 && beltMeter <= 2280) {
+                        activeFlaws.tension = {
+                            value: 314.2,
+                            type: 'high',
+                            location: 'Take-Up Carriage (Peak Ore Surcharge)'
+                        };
+                    } else if (beltMeter >= 2290 && beltMeter <= 2390) {
+                        activeFlaws.tension = {
+                            value: 164.8,
+                            type: 'low',
+                            location: 'Drive Pulley Take-Up (Trolley Slip)'
+                        };
+                    } else if (activeFlaws.break) {
+                        activeFlaws.tension = {
+                            value: 118.4,
+                            type: 'low',
+                            location: 'Ruptured Splice (Tension Lost)'
+                        };
+                    } else {
+                        activeFlaws.tension = null;
+                    }
+
+                    for (let i = 0; i < oreLumps.length; i++) {
+                        const lump = oreLumps[i];
+                        lump.x += 4.5;
+                        if (lump.x > w + 40) lump.x = -40;
+                        ctx.fillStyle = lump.color;
+                        ctx.beginPath();
+                        ctx.ellipse(lump.x, lump.y, lump.r * 1.3, lump.r, 0.15, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    const pct = (beltMeter / LOOP_LENGTH) * 100;
+                    $('trackFill').style.width = `${pct}%`;
+                    $('lblBeltMeters').textContent = `${beltMeter.toFixed(1)} m / ${LOOP_LENGTH.toFixed(1)} m`;
+
+                    let sectionLabel = '[🟢 Normal Running Belt]';
+                    let sectionColor = 'var(--green)';
+                    if (activeFlaws.hole && activeFlaws.crack) {
+                        sectionLabel = '[🚨 Multi-Defect Surge: Hole + Cracks]'; sectionColor = 'var(--red)';
+                    } else if (activeFlaws.hole) {
+                        sectionLabel = '[🚨 Puncture Hole at Left Edge]'; sectionColor = 'var(--red)';
+                    } else if (activeFlaws.crack) {
+                        sectionLabel = '[⚠️ Surface Cracks at Right Shoulder]'; sectionColor = 'var(--amber)';
+                    } else if (activeFlaws.lowThick) {
+                        sectionLabel = '[🚨 Low Thickness in Center Trough]'; sectionColor = 'var(--red)';
+                    } else if (activeFlaws.break) {
+                        sectionLabel = '[🚨 Splice Joint Break & Tension Collapse]'; sectionColor = 'var(--red)';
+                    } else if (activeFlaws.tension && activeFlaws.tension.type === 'high') {
+                        sectionLabel = '[🚨 Over-Tension Hazard: 314 kN]'; sectionColor = 'var(--red)';
+                    } else if (activeFlaws.tension && activeFlaws.tension.type === 'low') {
+                        sectionLabel = '[🚨 Low Tension Slack: 165 kN]'; sectionColor = 'var(--red)';
+                    }
+                    $('lblBeltSection').textContent = sectionLabel;
+                    $('lblBeltSection').style.color = sectionColor;
+                }
+
+                simAnimId = requestAnimationFrame(drawSim);
+            }
+
+            simAnimId = requestAnimationFrame(drawSim);
+            startAiOverlay();
+        }
+
+        function startAiOverlay() {
+            if (overlayAnimId) cancelAnimationFrame(overlayAnimId);
+            const canvas = $('aiCanvas');
+            const ctx = canvas.getContext('2d');
+
+            function drawOverlay() {
+                const rect = canvas.getBoundingClientRect();
+                if (canvas.width !== rect.width || canvas.height !== rect.height) {
+                    canvas.width = rect.width;
+                    canvas.height = rect.height;
+                }
+                const w = canvas.width, h = canvas.height;
+                ctx.clearRect(0, 0, w, h);
+
+                const hasHole = !!activeFlaws.hole;
+                const hasCrack = !!activeFlaws.crack;
+                const hasBreak = !!activeFlaws.break;
+                const hasLowThick = !!activeFlaws.lowThick;
+                const hasTensionAnomaly = !!activeFlaws.tension;
+                const hasForeign = !!activeFlaws.foreign;
+
+                const anyDefect = hasHole || hasCrack || hasBreak || hasLowThick || hasTensionAnomaly || hasForeign;
+                const isCritical = hasHole || hasBreak || hasLowThick || hasTensionAnomaly;
+
+                const boxX = 24, boxY = 24, boxW = w - 110, boxH = h - 48;
+                ctx.strokeStyle = isCritical ? 'rgba(239, 68, 68, 0.85)' : (anyDefect ? 'rgba(245, 158, 11, 0.85)' : 'rgba(16, 185, 129, 0.55)');
+                ctx.lineWidth = 2;
+
+                const c = 20;
+                ctx.beginPath();
+                ctx.moveTo(boxX, boxY + c); ctx.lineTo(boxX, boxY); ctx.lineTo(boxX + c, boxY);
+                ctx.moveTo(boxX + boxW - c, boxY); ctx.lineTo(boxX + boxW, boxY); ctx.lineTo(boxX + boxW, boxY + c);
+                ctx.moveTo(boxX, boxY + boxH - c); ctx.lineTo(boxX, boxY + boxH); ctx.lineTo(boxX + c, boxY + boxH);
+                ctx.moveTo(boxX + boxW - c, boxY + boxH); ctx.lineTo(boxX + boxW, boxY + boxH); ctx.lineTo(boxX + boxW, boxY + boxH - c);
+                ctx.stroke();
+
+                let tagText = '✅ AI SCANNER: NORMAL BELT SURFACE · ALL 5 CHECKS CLEAR';
+                if (anyDefect) {
+                    let labels = [];
+                    if (hasHole) labels.push(`🕳️ HOLE [${activeFlaws.hole.location.split(' ')[0]}]`);
+                    if (hasForeign) labels.push(`📦 FOREIGN OBJECT`);
+                    if (hasCrack) labels.push(`⚡ CRACK [${activeFlaws.crack.location.split(' ')[0]}]`);
+                    if (hasBreak) labels.push(`💥 BREAK [SPLICE]`);
+                    if (hasLowThick) labels.push(`📏 THICKNESS 8.2mm (<12mm)`);
+                    if (hasTensionAnomaly) labels.push(`⚖️ TENSION ${activeFlaws.tension.value}kN`);
+                    tagText = `🚨 DETECTED: ${labels.join('  |  ')}`;
+                }
+
+                ctx.fillStyle = isCritical ? '#ef4444' : (anyDefect ? '#f59e0b' : '#10b981');
+                ctx.font = '700 11px Manrope, sans-serif';
+                const txtW = ctx.measureText(tagText).width;
+                ctx.fillRect(boxX, boxY - 20, txtW + 16, 20);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(tagText, boxX + 8, boxY - 6);
+
+                if (hasHole && (activeFlaws.hole.x !== undefined || activeFlaws.hole.normX !== undefined)) {
+                    let hX = activeFlaws.hole.x !== undefined ? activeFlaws.hole.x : activeFlaws.hole.normX * w;
+                    let hY = activeFlaws.hole.y !== undefined ? activeFlaws.hole.y : activeFlaws.hole.normY * h;
+                    let sz = Math.max(26, activeFlaws.hole.size || 40);
+
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(hX, hY, sz / 2 + 8, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.strokeRect(hX - sz / 2 - 4, hY - sz / 2 - 4, sz + 8, sz + 8);
+
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(hX - 50, hY - sz / 2 - 26, 170, 20);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '700 10px DM Mono, monospace';
+                    ctx.fillText(`🕳️ HOLE: Ø${activeFlaws.hole.size || 35}mm`, hX - 45, hY - sz / 2 - 12);
+                }
+
+                if (hasForeign) {
+                    let fX = activeFlaws.foreign.x !== undefined ? activeFlaws.foreign.x : (activeFlaws.foreign.normX ? activeFlaws.foreign.normX * w : w * 0.5);
+                    let fY = activeFlaws.foreign.y !== undefined ? activeFlaws.foreign.y : (activeFlaws.foreign.normY ? activeFlaws.foreign.normY * h : h * 0.5);
+
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 2.5;
+                    ctx.strokeRect(fX - 45, fY - 35, 90, 70);
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillRect(fX - 45, fY - 55, 175, 20);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '700 9.5px DM Mono, monospace';
+                    ctx.fillText(`📦 FOREIGN OBJECT (DEBRIS)`, fX - 40, fY - 41);
+                }
+
+                if (hasCrack) {
+                    let cX = activeFlaws.crack.x !== undefined ? activeFlaws.crack.x : activeFlaws.crack.normX * w;
+                    let cY = activeFlaws.crack.y !== undefined ? activeFlaws.crack.y : activeFlaws.crack.normY * h;
+
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 2.5;
+                    ctx.strokeRect(cX - 50, cY - 25, 100, 50);
+
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fillRect(cX - 50, cY - 44, 142, 18);
+                    ctx.fillStyle = '#1e293b';
+                    ctx.font = '700 9.5px DM Mono, monospace';
+                    ctx.fillText(`⚡ CRACK: ${activeFlaws.crack.location}`, cX - 46, cY - 31);
+                }
+
+                if (hasBreak) {
+                    let bX = activeFlaws.break.x !== undefined ? activeFlaws.break.x : w * 0.44;
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 2.5;
+                    ctx.strokeRect(bX - 30, 36, 60, h - 72);
+
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(bX - 30, 18, 140, 18);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '700 9.5px DM Mono, monospace';
+                    ctx.fillText(`💥 BREAK: SPLICE GAP 7.4mm`, bX - 26, 31);
+                }
+
+                const gaugeH = h - 72;
+                const gaugeY = 36;
+
+                const thickX = w - 42;
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                ctx.fillRect(thickX, gaugeY, 32, gaugeH);
+                ctx.strokeStyle = hasLowThick ? '#ef4444' : '#64748b';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(thickX, gaugeY, 32, gaugeH);
+
+                const curThick = hasLowThick ? activeFlaws.lowThick.value : 16.5;
+                const thickFillH = (curThick / 20.0) * gaugeH;
+                ctx.fillStyle = curThick < REQUIRED_MIN_THICKNESS ? '#ef4444' : '#10b981';
+                ctx.fillRect(thickX + 2, gaugeY + gaugeH - thickFillH, 28, thickFillH);
+
+                const reqY = gaugeY + gaugeH - (REQUIRED_MIN_THICKNESS / 20.0) * gaugeH;
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([3, 2]);
+                ctx.beginPath();
+                ctx.moveTo(thickX - 3, reqY);
+                ctx.lineTo(thickX + 35, reqY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '700 7.5px DM Mono, monospace';
+                ctx.fillText('THICK', thickX + 3, gaugeY + 11);
+                ctx.fillText(`${curThick}mm`, thickX + 2, gaugeY + 22);
+                ctx.fillStyle = '#fde68a';
+                ctx.fillText('12mm', thickX + 2, reqY - 3);
+
+                const tenX = w - 82;
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                ctx.fillRect(tenX, gaugeY, 34, gaugeH);
+                ctx.strokeStyle = hasTensionAnomaly ? '#ef4444' : '#64748b';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(tenX, gaugeY, 34, gaugeH);
+
+                let curTension = 245.2;
+                if (hasTensionAnomaly) curTension = activeFlaws.tension.value;
+                else if (hasBreak) curTension = 118.4;
+
+                const isTensionBad = curTension < MIN_SAFE_TENSION || curTension > MAX_SAFE_TENSION;
+                const tenFillH = Math.min(gaugeH, (curTension / 400.0) * gaugeH);
+                ctx.fillStyle = isTensionBad ? '#ef4444' : '#38bdf8';
+                ctx.fillRect(tenX + 2, gaugeY + gaugeH - tenFillH, 30, tenFillH);
+
+                const minTenY = gaugeY + gaugeH - (MIN_SAFE_TENSION / 400.0) * gaugeH;
+                const maxTenY = gaugeY + gaugeH - (MAX_SAFE_TENSION / 400.0) * gaugeH;
+
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([2, 2]);
+                ctx.beginPath();
+                ctx.moveTo(tenX - 2, minTenY); ctx.lineTo(tenX + 36, minTenY);
+                ctx.moveTo(tenX - 2, maxTenY); ctx.lineTo(tenX + 36, maxTenY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '700 7.5px DM Mono, monospace';
+                ctx.fillText('TENSN', tenX + 3, gaugeY + 11);
+                ctx.fillText(`${curTension.toFixed(0)}kN`, tenX + 2, gaugeY + 22);
+                ctx.fillStyle = '#fde68a';
+                ctx.fillText('190', tenX + 2, minTenY + 9);
+                ctx.fillText('290', tenX + 2, maxTenY - 2);
+
+                overlayAnimId = requestAnimationFrame(drawOverlay);
+            }
+            overlayAnimId = requestAnimationFrame(drawOverlay);
+        }
+
+        function updateLogic() {
+            if (!isRunning) return;
+
+            const hasHole = !!activeFlaws.hole;
+            const hasCrack = !!activeFlaws.crack;
+            const hasBreak = !!activeFlaws.break;
+            const hasLowThick = !!activeFlaws.lowThick;
+            const hasTensionAnomaly = !!activeFlaws.tension;
+            const hasForeign = !!activeFlaws.foreign;
+
+            let tension = Number((245.0 + Math.random() * 2.2 - 1.1).toFixed(1));
+            if (hasTensionAnomaly) {
+                tension = activeFlaws.tension.value;
+            } else if (hasBreak) {
+                tension = Number((118.0 + Math.random() * 1.5).toFixed(1));
+            }
+
+            const isTensionLow = tension < MIN_SAFE_TENSION;
+            const isTensionHigh = tension > MAX_SAFE_TENSION;
+            const isTensionFault = isTensionLow || isTensionHigh;
+
+            const anyDefect = hasHole || hasCrack || hasBreak || hasLowThick || isTensionFault || hasForeign;
+            const isCritical = hasHole || hasBreak || hasLowThick || isTensionFault;
+
+            let penalty = 0;
+            if (hasHole) penalty += 38;
+            if (hasBreak) penalty += 46;
+            if (hasLowThick) penalty += 30;
+            if (hasCrack) penalty += 16;
+            if (hasForeign) penalty += 20;
+            if (isTensionLow) penalty += 28;
+            if (isTensionHigh) penalty += 32;
+
+            let health = Math.max(12, Math.round(96 - penalty + (Math.random() * 2 - 1)));
+            let thickness = hasLowThick ? activeFlaws.lowThick.value : Number((16.4 + Math.random() * 0.3).toFixed(1));
+            let vib = Number((3.1 + (hasBreak ? 5.2 : (hasHole ? 3.0 : 0)) + (isTensionHigh ? 2.4 : 0) + Math.random() * 0.2).toFixed(1));
+            let temp = Math.round(52 + (hasBreak ? 12 : (hasLowThick ? 6 : 0)) + (isTensionLow ? 8 : 0) + Math.random() * 2);
+
+            let verdictHeading = 'FINAL AI OUTPUT: BELT HEALTHY & FIT FOR RUNNING';
+            let verdictDesc = `Operating tension (${tension} kN) in safe 200-280 kN envelope. Thickness (${thickness} mm) above 12.0 mm limit. Full belt width inspected. Zero active flaws detected. Safe to operate.`;
+            let verdictLocationText = '';
+            let verdictIcon = '✅';
+            let verdictClass = '';
+
+            let activeReportList = [];
+
+            if (!anyDefect) {
+                verdictHeading = 'FINAL AI OUTPUT: BELT HEALTHY & FIT FOR RUNNING';
+                verdictDesc = `Operating tension (${tension} kN) in safe 200-280 kN envelope. Thickness (${thickness} mm) exceeds 12.0 mm limit. Full belt width inspected. Zero active flaws detected.`;
+                verdictClass = '';
+                verdictIcon = '✅';
+                $('verdictLocation').style.display = 'none';
+            } else {
+                if (hasHole) activeReportList.push(`🕳️ HOLE / PUNCTURE DETECTED at ${activeFlaws.hole.location} (Ø${activeFlaws.hole.size || 35}mm)`);
+                if (hasForeign) activeReportList.push(`📦 FOREIGN OBJECT DETECTED (${activeFlaws.foreign.desc || 'Debris on Belt'})`);
+                if (hasCrack) activeReportList.push(`⚡ CRACK DETECTED at ${activeFlaws.crack.location} (${activeFlaws.crack.length}mm)`);
+                if (hasBreak) activeReportList.push(`💥 BREAK DETECTED at ${activeFlaws.break.location} (${activeFlaws.break.gap}mm gap)`);
+                if (hasLowThick) activeReportList.push(`📏 LOW THICKNESS DETECTED in ${activeFlaws.lowThick.location} (${thickness}mm < 12mm)`);
+                if (isTensionLow) activeReportList.push(`⚖️ LOW TENSION ALARM (${tension} kN < 190 kN)`);
+                if (isTensionHigh) activeReportList.push(`⚖️ OVER-TENSION ALARM (${tension} kN > 290 kN)`);
+
+                verdictIcon = isCritical ? '🚨' : '⚠️';
+                verdictClass = isCritical ? 'danger' : 'warn';
+
+                if (activeReportList.length === 1) {
+                    verdictHeading = `FINAL AI OUTPUT: ${activeReportList[0]}`;
+                    if (isTensionLow) {
+                        verdictDesc = `Operating tension (${tension} kN) dropped below safe 190.0 kN limit. Drive pulley slippage and heavy belt sag hazard. Inspect take-up counterweight and winch carriage.`;
+                        verdictLocationText = `Take-up Tension Trolley · Belt Pos: ${beltMeter.toFixed(1)}m`;
+                    } else if (isTensionHigh) {
+                        verdictDesc = `Operating tension (${tension} kN) exceeds 290.0 kN maximum safe limit. Critical tension stress on steel cords. Extreme risk of belt snap under ore surcharge.`;
+                        verdictLocationText = `Drive Pulley & Take-up System · Belt Pos: ${beltMeter.toFixed(1)}m`;
+                    } else if (hasHole) {
+                        verdictDesc = `Through-belt puncture/hole verified at ${activeFlaws.hole.location}. Risk of ore spill, roller damage, and longitudinal tear propagation. Immediate vulcanized patching required.`;
+                        verdictLocationText = `${activeFlaws.hole.location} · Belt Pos: ${beltMeter.toFixed(1)}m`;
+                    } else if (hasForeign) {
+                        verdictDesc = `Extraneous foreign object/matter detected resting on conveyor belt surface (${activeFlaws.foreign.desc}). Risk of chute jam or belt gouging. Remove object immediately.`;
+                        verdictLocationText = `${activeFlaws.foreign.location} · Belt Pos: ${beltMeter.toFixed(1)}m`;
+                    } else if (hasCrack) {
+                        verdictDesc = `Surface fissures identified at ${activeFlaws.crack.location}. Apply cold-cure rubber sealant to prevent moisture and ore grit penetrating steel cords.`;
+                        verdictLocationText = `${activeFlaws.crack.location} · Belt Pos: ${beltMeter.toFixed(1)}m`;
+                    } else if (hasBreak) {
+                        verdictDesc = `Splice joint rupture and cord separation detected at ${activeFlaws.break.location}. Simultaneous tension drop to ${tension} kN. Immediate conveyor shutdown recommended.`;
+                        verdictLocationText = `${activeFlaws.break.location} · Belt Pos: ${beltMeter.toFixed(1)}m`;
+                    } else if (hasLowThick) {
+                        verdictDesc = `Rubber cover eroded to ${thickness} mm (Below 12.0 mm threshold). Danger of exposing tension cords. Schedule belt re-topping.`;
+                        verdictLocationText = `${activeFlaws.lowThick.location} · Belt Pos: ${beltMeter.toFixed(1)}m`;
+                    }
+                } else {
+                    verdictHeading = `FINAL AI OUTPUT: SIMULTANEOUS DEFECTS (${activeReportList.length} FLAWS DETECTED)`;
+                    verdictDesc = `Multiple anomalies occurring simultaneously: ${activeReportList.join(' AND ')}. Immediate maintenance intervention required.`;
+                    verdictLocationText = `Multiple Belt Zones · Belt Pos: ${beltMeter.toFixed(1)}m`;
+                }
+
+                $('verdictLocation').style.display = 'inline-flex';
+                $('verdictLocText').textContent = verdictLocationText;
+
+                playAlarmSound();
+            }
+
+            $('healthPercent').textContent = `${health}%`;
+            $('healthCircle').style.setProperty('--health-percent', `${health}%`);
+            const circleColor = health >= 75 ? 'var(--green)' : (health >= 45 ? 'var(--amber)' : 'var(--red)');
+            $('healthCircle').style.background = `conic-gradient(${circleColor} ${health}%, #e2e8f0 0)`;
+
+            $('overallText').textContent = anyDefect ? (isCritical ? `🚨 ALARM: ${activeReportList[0]}` : '⚠️ WARNING: SURFACE CRACK DETECTED') : 'CONVEYOR NORMAL · ALL 5 CHECKS PASS';
+            $('overallBadge').className = `status-badge ${anyDefect ? (isCritical ? 'danger' : 'warn') : ''}`;
+
+            $('healthTitle').textContent = anyDefect ? (isCritical ? 'Defects / Tension Anomalies Detected' : 'Surface Wear Detected') : 'Belt is in Good Condition';
+            $('healthDesc').textContent = anyDefect ? `AI scanner actively tracks: ${activeReportList.join(' · ')}.` : 'Conveyor belt running normally. Tension, thickness, and cord matrix within standard operating limits.';
+
+            $('verdictHeading').textContent = verdictHeading;
+            $('verdictDesc').textContent = verdictDesc;
+            $('verdictIcon').textContent = verdictIcon;
+            $('verdictBox').className = `verdict-box ${verdictClass}`;
+
+            $('valTension').textContent = `${tension} kN`;
+            let tensionBadge = 'PASS (200-280 kN)';
+            let tensionClass = '';
+            if (isTensionLow) {
+                tensionBadge = 'FAIL (<190 kN)';
+                tensionClass = 'failed';
+            } else if (isTensionHigh) {
+                tensionBadge = 'FAIL (>290 kN)';
+                tensionClass = 'failed';
+            }
+            $('badgeTension').textContent = tensionBadge;
+            $('badgeTension').className = `check-badge ${isTensionFault ? 'fail' : ''}`;
+            $('rowTension').className = `check-row ${tensionClass}`;
+
+            $('valThickness').textContent = `${thickness} mm`;
+            $('badgeThickness').textContent = hasLowThick ? 'FAIL (<12mm)' : 'PASS (≥12mm)';
+            $('badgeThickness').className = `check-badge ${hasLowThick ? 'fail' : ''}`;
+            $('rowThickness').className = `check-row ${hasLowThick ? 'failed' : ''}`;
+
+            $('valCracks').textContent = hasCrack ? `${activeFlaws.crack.length}mm at ${activeFlaws.crack.location.split(' ')[0]}` : '0 Cracks';
+            $('badgeCracks').textContent = hasCrack ? 'WARN (Cracks)' : 'PASS (Clean)';
+            $('badgeCracks').className = `check-badge ${hasCrack ? 'warn' : ''}`;
+            $('rowCracks').className = `check-row ${hasCrack ? 'warning' : ''}`;
+
+            $('valBreaks').textContent = hasBreak ? `${activeFlaws.break.gap}mm Gap at Splice` : '100% Intact';
+            $('badgeBreaks').textContent = hasBreak ? 'FAIL (Break)' : 'PASS (Aligned)';
+            $('badgeBreaks').className = `check-badge ${hasBreak ? 'fail' : ''}`;
+            $('rowBreaks').className = `check-row ${hasBreak ? 'failed' : ''}`;
+
+            $('valHoles').textContent = hasHole ? `Ø${activeFlaws.hole.size}mm at ${activeFlaws.hole.location.split(' ')[0]}` : '0 Holes';
+            $('badgeHoles').textContent = hasHole ? 'FAIL (Hole)' : 'PASS (Zero Holes)';
+            $('badgeHoles').className = `check-badge ${hasHole ? 'fail' : ''}`;
+            $('rowHoles').className = `check-row ${hasHole ? 'failed' : ''}`;
+
+            const diffTen = isTensionFault ? (isTensionHigh ? '56% L / 44% R' : '42% L / 58% R') : '50% L / 50% R';
+            $('lblTenBalance').textContent = diffTen;
+            $('lblTakeUp').textContent = isTensionLow ? '3.8 m (Over-extended)' : (isTensionHigh ? '1.2 m (Retracted)' : '2.4 m Travel');
+            $('lblVib').textContent = `${vib} mm/s`;
+            $('lblTemp').textContent = `${temp} °C`;
+
+            const findingsList = [];
+            if (hasHole && (activeFlaws.hole.size || 35) >= currentMinSizeFilter) {
+                findingsList.push({
+                    id: 'FLAW-HL-01',
+                    icon: '🕳️',
+                    name: 'Puncture Hole',
+                    cat: 'Through Void',
+                    size: `${activeFlaws.hole.size || 38} mm`,
+                    loc: activeFlaws.hole.location || 'Left Edge',
+                    box: `[${Math.round((activeFlaws.hole.normX||0.25)*100)}%, ${Math.round((activeFlaws.hole.normY||0.3)*100)}%, ${Math.round((activeFlaws.hole.normX||0.25)*100+5)}%, ${Math.round((activeFlaws.hole.normY||0.3)*100+5)}%]`,
+                    conf: `${Math.round(88 + Math.random()*8)}%`,
+                    status: '<span class="check-badge fail">CRITICAL</span>'
+                });
+            }
+            if (hasForeign) {
+                findingsList.push({
+                    id: 'FLAW-FO-02',
+                    icon: '📦',
+                    name: 'Foreign Object',
+                    cat: 'Debris / Scrap',
+                    size: '45 mm',
+                    loc: activeFlaws.foreign.location || 'Center Belt',
+                    box: `[38%, 42%, 48%, 54%]`,
+                    conf: `${Math.round(85 + Math.random()*10)}%`,
+                    status: '<span class="check-badge warn">WARNING</span>'
+                });
+            }
+            if (hasCrack && (activeFlaws.crack.length || 14) >= currentMinSizeFilter) {
+                findingsList.push({
+                    id: 'FLAW-CR-03',
+                    icon: '⚡',
+                    name: 'Surface Crack',
+                    cat: 'Fissure / Tear',
+                    size: `${activeFlaws.crack.length || 14} mm`,
+                    loc: activeFlaws.crack.location || 'Right Shoulder',
+                    box: `[65%, 72%, 78%, 76%]`,
+                    conf: `${Math.round(80 + Math.random()*12)}%`,
+                    status: '<span class="check-badge warn">WARNING</span>'
+                });
+            }
+            if (hasBreak) {
+                findingsList.push({
+                    id: 'FLAW-BR-04',
+                    icon: '💥',
+                    name: 'Splice Joint Break',
+                    cat: 'Structural Rupture',
+                    size: `${activeFlaws.break.gap || 7.4} mm Gap`,
+                    loc: activeFlaws.break.location || 'Splice #4',
+                    box: `[0%, 45%, 100%, 55%]`,
+                    conf: '98%',
+                    status: '<span class="check-badge fail">CRITICAL</span>'
+                });
+            }
+            if (hasLowThick) {
+                findingsList.push({
+                    id: 'FLAW-TH-05',
+                    icon: '📏',
+                    name: 'Low Cover Thickness',
+                    cat: 'Cover Wear',
+                    size: `${thickness} mm (<12mm)`,
+                    loc: activeFlaws.lowThick.location || 'Center Trough',
+                    box: `[15%, 35%, 85%, 65%]`,
+                    conf: '94%',
+                    status: '<span class="check-badge fail">CRITICAL</span>'
+                });
+            }
+
+            $('lblActiveFindingCount').textContent = `${findingsList.length} Active Flaw${findingsList.length === 1 ? '' : 's'}`;
+            if (findingsList.length === 0) {
+                $('findingsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align:center; color:var(--muted); padding:16px;">
+                            🟢 No active damage findings in current inspection segment. Belt operating cleanly.
+                        </td>
+                    </tr>`;
+            } else {
+                $('findingsTableBody').innerHTML = findingsList.map(f => `
+                    <tr>
+                        <td><strong>${f.icon} ${f.id}</strong></td>
+                        <td>${f.name}</td>
+                        <td><strong>${f.size}</strong></td>
+                        <td>${f.loc}</td>
+                        <td><code>${f.box}</code></td>
+                        <td><strong style="color:var(--text);">${f.conf}</strong></td>
+                        <td>${f.status}</td>
+                    </tr>`).join('');
+            }
+
+            const currentSignature = anyDefect ? activeReportList.join('|') : 'CLEAR';
+            if (currentSignature !== lastReportedDefectSignature) {
+                lastReportedDefectSignature = currentSignature;
+                pushAlertItem(anyDefect, hasHole, hasCrack, hasBreak, hasLowThick, isTensionFault, tension, thickness);
+            }
+
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            healthSamples.push({ t: timeStr, v: health });
+            if (healthSamples.length > 28) healthSamples.shift();
+
+            if (chart) {
+                chart.data.labels = healthSamples.map(s => s.t);
+                chart.data.datasets[0].data = healthSamples.map(s => s.v);
+                chart.data.datasets[0].borderColor = health >= 75 ? '#10b981' : (health >= 45 ? '#f59e0b' : '#ef4444');
+                chart.data.datasets[0].backgroundColor = health >= 75 ? 'rgba(16, 185, 129, 0.08)' : (health >= 45 ? 'rgba(245, 158, 11, 0.08)' : 'rgba(239, 68, 68, 0.08)');
+                chart.update();
+            }
+        }
+
+        let alertHistory = [];
+        function pushAlertItem(anyDefect, hasHole, hasCrack, hasBreak, hasLowThick, isTensionFault, tension, thickness) {
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            let newAlert = null;
+
+            if (!anyDefect) {
+                newAlert = {
+                    icon: '✅',
+                    title: `Normal Belt Segment (${beltMeter.toFixed(0)}m)`,
+                    desc: `All 5 checks normal. Tension (${tension}kN) & thickness (${thickness}mm) in envelope. 0 cracks, 0 breaks, 0 holes. [${timeStr}]`,
+                    class: ''
+                };
+            } else {
+                let titles = [];
+                if (hasHole) titles.push(`Hole Detected (Ø${activeFlaws.hole.size}mm)`);
+                if (hasCrack) titles.push(`Cracks Detected at ${activeFlaws.crack.location}`);
+                if (hasBreak) titles.push(`Splice Break (${activeFlaws.break.gap}mm Gap)`);
+                if (hasLowThick) titles.push(`Low Thickness (${thickness}mm < 12mm)`);
+                if (isTensionFault) titles.push(tension < MIN_SAFE_TENSION ? `Low Tension (${tension}kN)` : `Over-Tension (${tension}kN)`);
+
+                newAlert = {
+                    icon: isTensionFault ? '⚖️' : (hasHole ? '🕳️' : (hasBreak ? '💥' : (hasLowThick ? '📏' : '⚡'))),
+                    title: `${titles.join(' + ')} [${timeStr}]`,
+                    desc: `Identified at Belt Position: ${beltMeter.toFixed(1)}m. Tension: ${tension} kN | Thickness: ${thickness} mm.`,
+                    class: (hasHole || hasBreak || hasLowThick || isTensionFault) ? 'critical' : 'warning'
+                };
+            }
+
+            alertHistory.unshift(newAlert);
+            if (alertHistory.length > 8) alertHistory.pop();
+
+            $('alertCountBadge').textContent = alertHistory.length;
+            $('alertsList').innerHTML = alertHistory.map(a => `
+        <div class="alert-card ${a.class}">
+          <div class="alert-icon-box">${a.icon}</div>
+          <div class="alert-info">
+            <h4>${a.title}</h4>
+            <p>${a.desc}</p>
+          </div>
+        </div>
+      `).join('');
+        }
+
+        function setJumpActive(btnId) {
+            document.querySelectorAll('.btn-pill').forEach(b => b.classList.remove('active'));
+            $(btnId).classList.add('active');
+        }
+
+        $('btnJumpNormal').onclick = () => {
+            beltMeter = 100.0;
+            setJumpActive('btnJumpNormal');
+            toast('Jumped to Normal Belt Segment (All 5 Checks Healthy).');
+            updateLogic();
+        };
+
+        $('btnJumpHole').onclick = () => {
+            beltMeter = 420.0;
+            setJumpActive('btnJumpHole');
+            toast('Jumped to Massive Puncture Hole Segment (Ø50cm / 500mm Void).');
+            updateLogic();
+        };
+
+        $('btnJumpCrack').onclick = () => {
+            beltMeter = 930.0;
+            setJumpActive('btnJumpCrack');
+            toast('Jumped to Surface Cracks Segment (Right Shoulder).');
+            updateLogic();
+        };
+
+        $('btnJumpThick').onclick = () => {
+            beltMeter = 1450.0;
+            setJumpActive('btnJumpThick');
+            toast('Jumped to Low Thickness Segment (Center Trough, 8.2mm).');
+            updateLogic();
+        };
+
+        $('btnJumpBreak').onclick = () => {
+            beltMeter = 1940.0;
+            setJumpActive('btnJumpBreak');
+            toast('Jumped to Splice Joint Break & Tension Collapse.');
+            updateLogic();
+        };
+
+        $('btnJumpOverTension').onclick = () => {
+            beltMeter = 2220.0;
+            setJumpActive('btnJumpOverTension');
+            toast('Jumped to Over-Tension Segment (314 kN > 290 kN limit).');
+            updateLogic();
+        };
+
+        $('btnJumpLowTension').onclick = () => {
+            beltMeter = 2330.0;
+            setJumpActive('btnJumpLowTension');
+            toast('Jumped to Slack Low-Tension Segment (165 kN < 190 kN limit).');
+            updateLogic();
+        };
+
+        $('btnJumpMulti').onclick = () => {
+            beltMeter = 2080.0;
+            setJumpActive('btnJumpMulti');
+            toast('Jumped to Simultaneous Multi-Defect Surge (Hole + Cracks together!).');
+            updateLogic();
+        };
+
+        function startYoloFeed() {
+            stopAllFeeds();
+            activeSource = 'yolo';
+            const img = $('yoloStreamImg');
+            const emptyNotice = $('yoloEmpty');
+
+            fetch('http://localhost:8000/telemetry')
+                .then(r => r.json())
+                .then(data => {
+                    emptyNotice.classList.add('hidden');
+                    img.style.display = 'block';
+                    img.src = 'http://localhost:8000/stream?t=' + Date.now();
+                    $('cameraToggleBtn').textContent = 'Pause AI';
+                    $('cameraToggleBtn').classList.remove('primary');
+                    toast('Connected to YOLOv8 AI Model engine!');
+                })
+                .catch(err => {
+                    img.style.display = 'none';
+                    emptyNotice.classList.remove('hidden');
+                    toast('Could not reach YOLO AI server. Run run_live_sentinel_ai.bat');
+                });
+
+            yoloPollTimer = setInterval(() => {
+                if (activeSource !== 'yolo' || !isRunning) return;
+                fetch('http://localhost:8000/telemetry')
+                    .then(r => r.json())
+                    .then(data => {
+                        emptyNotice.classList.add('hidden');
+                        img.style.display = 'block';
+                        if ($('fpsBadge')) $('fpsBadge').textContent = `${data.fps} FPS`;
+
+                        if (data.has_damage && data.detections && data.detections.length > 0) {
+                            const holeDet = data.detections.find(d => d.type === 'hole' || (d.class && d.class.toLowerCase().includes('hole')));
+                            if (holeDet && holeDet.norm_bbox) {
+                                const confPct = Math.round((holeDet.confidence || 0.9) * 100);
+                                activeFlaws.hole = {
+                                    normX: (holeDet.norm_bbox[0] + holeDet.norm_bbox[2]) / 2,
+                                    normY: (holeDet.norm_bbox[1] + holeDet.norm_bbox[3]) / 2,
+                                    size: holeDet.size_mm || 50,
+                                    location: `${holeDet.location || 'Belt Surface'} (${confPct}% conf)`
+                                };
+                            } else {
+                                activeFlaws.hole = null;
+                            }
+
+                            const foreignDet = data.detections.find(d => d.type === 'foreign_object' || d.class.toLowerCase().includes('foreign'));
+                            if (foreignDet) {
+                                const confPct = Math.round((foreignDet.confidence || 0.88) * 100);
+                                activeFlaws.foreign = {
+                                    location: foreignDet.location || 'Belt Surface',
+                                    desc: `Foreign Matter/Debris (${confPct}%)`,
+                                    normX: foreignDet.norm_bbox ? (foreignDet.norm_bbox[0] + foreignDet.norm_bbox[2]) / 2 : 0.5,
+                                    normY: foreignDet.norm_bbox ? (foreignDet.norm_bbox[1] + foreignDet.norm_bbox[3]) / 2 : 0.5
+                                };
+                            } else {
+                                activeFlaws.foreign = null;
+                            }
+
+                            const crackDet = data.detections.find(d => d.type === 'crack' || d.class.toLowerCase().includes('crack') || d.class.toLowerCase().includes('tear'));
+                            if (crackDet) {
+                                const confPct = Math.round((crackDet.confidence || 0.85) * 100);
+                                activeFlaws.crack = {
+                                    location: `${crackDet.location || 'Belt Surface'} (${confPct}%)`,
+                                    length: crackDet.size_mm || 24,
+                                    count: 1
+                                };
+                            } else {
+                                activeFlaws.crack = null;
+                            }
+                        } else {
+                            activeFlaws.hole = null;
+                            activeFlaws.crack = null;
+                            activeFlaws.foreign = null;
+                        }
+                        updateLogic();
+                    })
+                    .catch(() => {
+                    });
+            }, 180);
+        }
+
+        $('tabSim').onclick = () => {
+            stopAllFeeds();
+            activeSource = 'sim';
+            $('tabSim').classList.add('active');
+            $('tabWebcam').classList.remove('active');
+            $('tabYolo').classList.remove('active');
+            $('cameraSelect').style.display = 'none';
+            $('simCanvas').style.display = 'block';
+            startSimulation();
+            toast('Switched to Conveyor Stream.');
+        };
+
+        $('tabWebcam').onclick = () => {
+            stopAllFeeds();
+            activeSource = 'webcam';
+            $('tabWebcam').classList.add('active');
+            $('tabSim').classList.remove('active');
+            $('tabYolo').classList.remove('active');
+            $('cameraSelect').style.display = 'block';
+            startWebcam($('cameraSelect').value);
+            toast('Switched to Webcam Feed.');
+        };
+
+        $('tabYolo').onclick = () => {
+            $('tabYolo').classList.add('active');
+            $('tabSim').classList.remove('active');
+            $('tabWebcam').classList.remove('active');
+            $('cameraSelect').style.display = 'none';
+            startYoloFeed();
+        };
+
+        $('retryYoloBtn').onclick = () => {
+            startYoloFeed();
+        };
+
+        $('cameraSelect').onchange = e => {
+            if (activeSource === 'webcam') startWebcam(e.target.value);
+        };
+
+        $('startCamBtn').onclick = () => {
+            $('tabWebcam').click();
+        };
+
+        $('cameraToggleBtn').onclick = () => {
+            isRunning = !isRunning;
+            if (activeSource === 'sim') {
+                $('cameraToggleBtn').textContent = isRunning ? 'Pause Belt' : 'Resume Belt';
+            } else if (activeSource === 'yolo') {
+                $('cameraToggleBtn').textContent = isRunning ? 'Pause AI' : 'Resume AI';
+            } else {
+                $('cameraToggleBtn').textContent = isRunning ? 'Pause Camera' : 'Resume Camera';
+            }
+            $('cameraToggleBtn').classList.toggle('primary', !isRunning);
+            toast(isRunning ? 'Stream running.' : 'Stream paused.');
+        };
+
+        $('snapshotBtn').onclick = () => {
+            const canvas = document.createElement('canvas');
+            let w = 1280, h = 720;
+            const ctx = canvas.getContext('2d');
+
+            if (activeSource === 'webcam' && currentStream) {
+                const v = $('webcamVideo');
+                w = v.videoWidth || 1280; h = v.videoHeight || 720;
+                canvas.width = w; canvas.height = h;
+                ctx.drawImage(v, 0, 0, w, h);
+            } else if (activeSource === 'yolo') {
+                const yImg = $('yoloStreamImg');
+                w = yImg.naturalWidth || 1280; h = yImg.naturalHeight || 720;
+                canvas.width = w; canvas.height = h;
+                try {
+                    ctx.drawImage(yImg, 0, 0, w, h);
+                } catch(e) {
+                    const simC = $('simCanvas');
+                    ctx.drawImage(simC, 0, 0);
+                }
+            } else {
+                const simC = $('simCanvas');
+                w = simC.width; h = simC.height;
+                canvas.width = w; canvas.height = h;
+                ctx.drawImage(simC, 0, 0);
+            }
+
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+            ctx.fillRect(16, h - 76, 680, 60);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '700 13px Manrope, sans-serif';
+            ctx.fillText(`CONVEYOR SENTINEL · 5-POINT SCAN · ${new Date().toLocaleTimeString()} · BELT: ${beltMeter.toFixed(1)}m`, 28, h - 52);
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = '500 11px Manrope, sans-serif';
+            ctx.fillText(`TENSION: ${$('valTension').textContent} | THICKNESS: ${$('valThickness').textContent} | CRACKS: ${$('valCracks').textContent} | BREAKS: ${$('valBreaks').textContent} | HOLES: ${$('valHoles').textContent}`, 28, h - 34);
+            ctx.fillStyle = '#fde68a';
+            ctx.font = '700 10.5px Manrope, sans-serif';
+            ctx.fillText(`VERDICT: ${$('verdictHeading').textContent}`, 28, h - 16);
+
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL('image/png');
+            a.download = `conveyor-5point-scan-${Date.now()}.png`;
+            a.click();
+            toast('Diagnostic photo saved as PNG.');
+        };
+
+        startSimulation();
+        updateLogic();
+        logicTimer = setInterval(updateLogic, 1000);
+
+        window.addEventListener('beforeunload', () => {
+            stopAllFeeds();
+            if (logicTimer) clearInterval(logicTimer);
+        });
+    </script>
+</body>
+
+</html>

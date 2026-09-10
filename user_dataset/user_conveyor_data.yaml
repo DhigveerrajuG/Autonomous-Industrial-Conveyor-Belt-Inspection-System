@@ -1,0 +1,7 @@
+path: C:/Users/dheer/Downloads/Conveyor Belt Prop/user_dataset
+train: images/train
+val: images/val
+
+names:
+  0: hole
+  1: belt damage

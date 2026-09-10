@@ -1,0 +1,7 @@
+path: C:/Users/dheer/Downloads/Conveyor Belt Prop/enhanced_dataset
+train: images/train
+val: images/val
+
+names:
+  0: belt damage
+  1: foreign object

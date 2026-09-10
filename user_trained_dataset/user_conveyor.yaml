@@ -1,0 +1,8 @@
+path: C:/Users/dheer/Downloads/Conveyor Belt Prop/user_trained_dataset
+train: images/train
+val: images/val
+
+names:
+  0: hole
+  1: foreign object
+  2: crack
