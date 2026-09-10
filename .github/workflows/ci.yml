@@ -1,0 +1,52 @@
+name: CI - Code Validation & Quality Checks
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Lint, Syntax & Engine Integrity
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Validation Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install opencv-python-headless numpy pillow flake8
+
+      - name: Python Syntax & Bytecode Compilation Check
+        run: |
+          python -m py_compile yolo_sentinel_server.py \
+                                train_perfect_conveyor_model.py \
+                                train_from_user_images.py \
+                                verify_annotations.py \
+                                create_user_labels.py
+
+      - name: Run Dataset & Annotation Sanity Verification
+        run: |
+          python verify_annotations.py
+
+      - name: Verify Web Sentinel Dashboard Structure
+        run: |
+          python -c "
+          with open('conveyor-sentinel-dashboard.html', 'r', encoding='utf-8') as f:
+              html = f.read()
+          assert 'Conveyor Sentinel' in html, 'Title missing'
+          assert 'tabYolo' in html, 'YOLO tab missing'
+          assert 'overallBadge' in html, 'Overall badge missing'
+          assert 'fpsBadge' in html, 'FPS badge missing'
+          print('Dashboard structure validated successfully.')
+          "

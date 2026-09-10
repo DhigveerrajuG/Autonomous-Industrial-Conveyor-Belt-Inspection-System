@@ -58,8 +58,8 @@ An end-to-end industrial computer vision and deep learning monitoring system for
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/DhigveerrajuG/mining-conveyor-belt-monitoring-system.git
-cd mining-conveyor-belt-monitoring-system
+git clone https://github.com/DhigveerrajuG/Autonomous-Industrial-Conveyor-Belt-Inspection-System.git
+cd Autonomous-Industrial-Conveyor-Belt-Inspection-System
 ```
 
 ### 3. Install Dependencies

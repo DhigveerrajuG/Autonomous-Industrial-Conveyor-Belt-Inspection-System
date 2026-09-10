@@ -1,0 +1,22 @@
+# GitHub Code Owners for Autonomous Industrial Conveyor Belt Inspection System
+# Documentation: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repository
+* @DhigveerrajuG
+
+# Core AI Detection Engine & Server
+/yolo_sentinel_server.py @DhigveerrajuG
+/yolov8n.pt @DhigveerrajuG
+/weights/ @DhigveerrajuG
+
+# Model Training & Dataset Pipeline
+/train_perfect_conveyor_model.py @DhigveerrajuG
+/train_from_user_images.py @DhigveerrajuG
+/verify_annotations.py @DhigveerrajuG
+/create_user_labels.py @DhigveerrajuG
+
+# Real-Time Telemetry Sentinel Dashboard
+/conveyor-sentinel-dashboard.html @DhigveerrajuG
+
+# Repository Configuration, Actions & Templates
+/.github/ @DhigveerrajuG

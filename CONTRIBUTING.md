@@ -1,4 +1,4 @@
-# Contributing to Mining Conveyor Belt Monitoring System
+# Contributing to Autonomous Industrial Conveyor Belt Inspection System
 
 Thank you for your interest in contributing! Whether you are an engineering student, computer vision enthusiast, or industrial automation developer, your contributions are warmly welcomed.
 
@@ -13,7 +13,7 @@ You can contribute in many ways:
 - **Documentation**: Improving guides, adding docstrings, or writing tutorials.
 - **UI / Dashboard**: Enhancing the real-time Sentinel dashboard.
 
-Check out our [Issues tab](https://github.com/DhigveerrajuG/mining-conveyor-belt-monitoring-system/issues) with the **`good first issue`** and **`help wanted`** labels!
+Check out our [Issues tab](https://github.com/DhigveerrajuG/Autonomous-Industrial-Conveyor-Belt-Inspection-System/issues) with the **`good first issue`** and **`help wanted`** labels!
 
 ---
 
@@ -21,8 +21,8 @@ Check out our [Issues tab](https://github.com/DhigveerrajuG/mining-conveyor-belt
 
 ### 1. Fork and Clone the Repository
 ```bash
-git clone https://github.com/<your-username>/mining-conveyor-belt-monitoring-system.git
-cd mining-conveyor-belt-monitoring-system
+git clone https://github.com/<your-username>/Autonomous-Industrial-Conveyor-Belt-Inspection-System.git
+cd Autonomous-Industrial-Conveyor-Belt-Inspection-System
 ```
 
 ### 2. Set Up Your Python Environment

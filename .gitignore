@@ -29,6 +29,7 @@ ENV/
 # YOLO & Training artifacts
 runs/
 *.log
+**/annotated_*
 
 # OS generated files
 .DS_Store
