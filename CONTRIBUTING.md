@@ -74,3 +74,8 @@ Before submitting your PR, ensure that:
 
 ## 📜 Code of Conduct
 Please maintain a respectful, welcoming, and collaborative environment for all contributors.
+
+---
+
+## 👥 Contributor Recognition
+All contributors to this repository (human engineers and AI pair programming collaborators) are acknowledged in [CONTRIBUTORS.md](CONTRIBUTORS.md). If you make a contribution, be sure to add yourself or request your attribution in your pull request!

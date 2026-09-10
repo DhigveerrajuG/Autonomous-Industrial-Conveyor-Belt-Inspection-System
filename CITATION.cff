@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Gadde"
+    given-names: "Dhigveerraju"
+    alias: "DhigveerrajuG"
+  - name: "Antigravity (Google DeepMind)"
+title: "Autonomous Industrial Conveyor Belt Inspection System"
+version: 1.0.0
+date-released: 2026-09-10
+url: "https://github.com/DhigveerrajuG/Autonomous-Industrial-Conveyor-Belt-Inspection-System"
+keywords:
+  - conveyor-belt
+  - computer-vision
+  - yolov8
+  - deep-learning
+  - industrial-inspection
+  - real-time-telemetry

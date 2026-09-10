@@ -1,0 +1,39 @@
+{
+  "projectName": "Autonomous-Industrial-Conveyor-Belt-Inspection-System",
+  "projectOwner": "DhigveerrajuG",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md",
+    "CONTRIBUTORS.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "DhigveerrajuG",
+      "name": "Dhigveerraju Gadde",
+      "avatar_url": "https://github.com/DhigveerrajuG.png",
+      "profile": "https://github.com/DhigveerrajuG",
+      "contributions": [
+        "code",
+        "design",
+        "doc",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "Antigravity",
+      "name": "Antigravity (Google DeepMind)",
+      "avatar_url": "https://deepmind.google/favicon.ico",
+      "profile": "https://deepmind.google/",
+      "contributions": [
+        "code",
+        "architecture",
+        "design",
+        "doc"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
+}

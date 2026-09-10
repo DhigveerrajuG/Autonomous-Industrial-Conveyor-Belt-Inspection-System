@@ -149,8 +149,10 @@ The trained weights will automatically export to `weights/best.pt`.
 ├── train_new_model.bat             # 1-click launcher for synthetic retraining
 ├── train_with_my_images.bat        # 1-click launcher for custom training
 ├── requirements.txt                # Python package requirements
-├── CONTRIBUTING.md                  # Contributor guidelines
+├── CONTRIBUTING.md                  # Contributor guidelines & code of conduct
 ├── CONTRIBUTORS.md                  # Project contributors & acknowledgements
+├── CITATION.cff                     # Academic & software citation metadata
+├── .all-contributorsrc              # Contributor specification
 ├── .gitignore                      # Git ignore rules
 └── LICENSE                         # MIT License
 ```
@@ -159,7 +161,7 @@ The trained weights will automatically export to `weights/best.pt`.
 
 ## 🤝 Contributors & Acknowledgements
 
-This project is built and maintained through the collaboration of human ingenuity and AI pair programming:
+This project is built and maintained through the collaboration of human engineering and AI pair programming:
 
 | Contributor | Role | Focus Areas |
 | :--- | :--- | :--- |

@@ -1,3 +1,9 @@
+"""
+Conveyor Sentinel AI - Real-time Industrial Conveyor Defect Inspection Server
+Project Creator & Lead: Dhigveerraju Gadde (@DhigveerrajuG)
+AI Pair Programmer: Antigravity (Google DeepMind)
+"""
+
 import os
 import time
 import json

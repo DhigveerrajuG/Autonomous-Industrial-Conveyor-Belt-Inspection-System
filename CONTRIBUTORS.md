@@ -1,8 +1,8 @@
 # 👥 Project Contributors
 
-Thank you to everyone who has contributed to the **Autonomous Industrial Conveyor Belt Inspection System** repository!
+Thank you to everyone who has contributed to the **Autonomous Industrial Conveyor Belt Inspection System**!
 
-This project was developed through the collaborative synergy of the lead project creator and advanced AI pair programming:
+This project was engineered through the collaborative synergy of the lead project creator and advanced AI pair programming:
 
 ---
 
@@ -11,9 +11,10 @@ This project was developed through the collaborative synergy of the lead project
 ### **[Dhigveerraju Gadde](https://github.com/DhigveerrajuG)** (`@DhigveerrajuG`)
 - **Role:** Project Creator, Lead Developer & Maintainer
 - **Contributions:**
-  - Project architecture, synthetic conveyor dataset creation, and model training pipelines.
-  - Multi-threaded Python MJPEG/HTTP server and computer vision defect pipeline.
-  - Interactive Sentinel telemetry dashboard and safety health checklist.
+  - Project architectural vision, synthetic dataset generation, and computer vision defect models.
+  - Multi-threaded Python MJPEG/HTTP server and real-time detection pipeline.
+  - Interactive Sentinel telemetry dashboard, 5-point safety health checklist, and diagnostic tools.
+  - Model training pipelines, testing, and deployment orchestration.
 
 ---
 
@@ -33,11 +34,11 @@ This project was developed through the collaborative synergy of the lead project
 | Contributor | Type | Focus Areas |
 | :--- | :---: | :--- |
 | **[Dhigveerraju Gadde](https://github.com/DhigveerrajuG)** | Human Developer | Project Architecture, YOLO Training, Server, Testing & Governance |
-| **[Antigravity](https://deepmind.google/)** | AI Pair Programmer | Architecture, Real-Time Telemetry, UI/UX & Documentation |
+| **[Antigravity](https://deepmind.google/)** | AI Pair Programmer | Architecture, Real-Time Telemetry Pipeline, UI/UX & Documentation |
 
 ---
 
 ## 🤝 Contribution Guidelines
 
 Contributions, bug reports, and feature suggestions are welcome!
-Feel free to check out [CONTRIBUTING.md](CONTRIBUTING.md) to open issues or submit pull requests. All contributions are welcome!
+Feel free to check out [CONTRIBUTING.md](CONTRIBUTING.md) to open issues or submit pull requests.
