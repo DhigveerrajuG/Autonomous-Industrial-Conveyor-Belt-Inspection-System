@@ -149,9 +149,24 @@ The trained weights will automatically export to `weights/best.pt`.
 ├── train_new_model.bat             # 1-click launcher for synthetic retraining
 ├── train_with_my_images.bat        # 1-click launcher for custom training
 ├── requirements.txt                # Python package requirements
+├── CONTRIBUTING.md                  # Contributor guidelines
+├── CONTRIBUTORS.md                  # Project contributors & acknowledgements
 ├── .gitignore                      # Git ignore rules
 └── LICENSE                         # MIT License
 ```
+
+---
+
+## 🤝 Contributors & Acknowledgements
+
+This project is built and maintained through the collaboration of human ingenuity and AI pair programming:
+
+| Contributor | Role | Focus Areas |
+| :--- | :--- | :--- |
+| **[Dhigveerraju Gadde](https://github.com/DhigveerrajuG)** | 👤 Project Creator & Lead Developer | Project Architecture, YOLO Training, Server, Testing & Governance |
+| **[Antigravity](https://deepmind.google/)** (Google DeepMind) | 🤖 AI Pair Programmer | Architecture, Real-Time Telemetry Pipeline, UI/UX & Documentation |
+
+For full details, roles, and contribution guidelines, see [CONTRIBUTORS.md](CONTRIBUTORS.md).
 
 ---
 
