@@ -58,8 +58,8 @@ An end-to-end industrial computer vision and deep learning monitoring system for
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/your-username/conveyor-sentinel-ai.git
-cd conveyor-sentinel-ai
+git clone https://github.com/DhigveerrajuG/mining-conveyor-belt-monitoring-system.git
+cd mining-conveyor-belt-monitoring-system
 ```
 
 ### 3. Install Dependencies
