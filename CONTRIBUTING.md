@@ -73,7 +73,12 @@ Before submitting your PR, ensure that:
 ---
 
 ## 📜 Code of Conduct
-Please maintain a respectful, welcoming, and collaborative environment for all contributors.
+Please review and adhere to our **[Code of Conduct](CODE_OF_CONDUCT.md)** (Contributor Covenant v2.1) to maintain a respectful, welcoming, and collaborative environment for all contributors.
+
+---
+
+## 🔒 Security Vulnerabilities
+If you discover a security vulnerability, please do **not** open a public issue. Review our **[Security Policy](SECURITY.md)** to report it confidentially.
 
 ---
 

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Community Discussions & Q&A
+    url: https://github.com/DhigveerrajuG/Autonomous-Industrial-Conveyor-Belt-Inspection-System/discussions
+    about: Ask questions, share ideas, and connect with other contributors.
+  - name: Security Vulnerability Reporting
+    url: https://github.com/DhigveerrajuG/Autonomous-Industrial-Conveyor-Belt-Inspection-System/security/advisories/new
+    about: Privately report security vulnerabilities to repository maintainers.

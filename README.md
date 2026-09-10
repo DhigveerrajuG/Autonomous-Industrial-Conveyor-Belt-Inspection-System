@@ -149,8 +149,11 @@ The trained weights will automatically export to `weights/best.pt`.
 ├── train_new_model.bat             # 1-click launcher for synthetic retraining
 ├── train_with_my_images.bat        # 1-click launcher for custom training
 ├── requirements.txt                # Python package requirements
-├── CONTRIBUTING.md                  # Contributor guidelines & code of conduct
+├── CONTRIBUTING.md                  # Contributor guidelines
 ├── CONTRIBUTORS.md                  # Project contributors & acknowledgements
+├── CODE_OF_CONDUCT.md               # Contributor Covenant v2.1 code of conduct
+├── SECURITY.md                      # Security policy & vulnerability reporting
+├── SUPPORT.md                       # Community support & assistance guide
 ├── CITATION.cff                     # Academic & software citation metadata
 ├── .all-contributorsrc              # Contributor specification
 ├── .gitignore                      # Git ignore rules
@@ -169,6 +172,16 @@ This project is built and maintained through the collaboration of human engineer
 | **[Antigravity](https://deepmind.google/)** (Google DeepMind) | 🤖 AI Pair Programmer | Architecture, Real-Time Telemetry Pipeline, UI/UX & Documentation |
 
 For full details, roles, and contribution guidelines, see [CONTRIBUTORS.md](CONTRIBUTORS.md).
+
+---
+
+## 🛡️ Community Standards & Governance
+
+We are committed to maintaining a welcoming, secure, and robust open-source project. Please review our community governance documents:
+- **[Code of Conduct](CODE_OF_CONDUCT.md)**: Standards of behavior and enforcement guidelines (Contributor Covenant v2.1).
+- **[Contributing Guidelines](CONTRIBUTING.md)**: How to set up your environment, write features, and submit PRs.
+- **[Security Policy](SECURITY.md)**: Supported versions and confidential security vulnerability reporting procedures.
+- **[Support Guide](SUPPORT.md)**: Where and how to get help, search existing issues, or ask questions.
 
 ---
 
